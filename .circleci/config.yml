@@ -7,11 +7,11 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: v1-pkg-cache-{{ checksum "Gopkg.lock" }}
+          key: v2-pkg-cache-{{ checksum "Gopkg.lock" }}
       - run: go get -u github.com/golang/dep/cmd/dep
       - run: dep ensure
       - save_cache:
-          key: v1-pkg-cache-{{ checksum "Gopkg.lock" }}
+          key: v2-pkg-cache-{{ checksum "Gopkg.lock" }}
           paths:
             - vendor
   release:
@@ -21,7 +21,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: v1-pkg-cache-{{ checksum "Gopkg.lock" }}
+          key: v2-pkg-cache-{{ checksum "Gopkg.lock" }}
       - run: go get -u github.com/mitchellh/gox
       - run: gox --osarch "darwin/amd64 linux/amd64 windows/amd64" --output "dist/{{.Dir}}_{{.OS}}_{{.Arch}}"
       - run: go build -o ./bin/diary
