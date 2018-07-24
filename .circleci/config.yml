@@ -7,24 +7,29 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: v2-pkg-cache-{{ checksum "Gopkg.lock" }}
+          key: v1-pkg-cache-{{ checksum "/go/src/github.com/longkey1/diary/Gopkg.lock" }}
       - run: go get -u github.com/golang/dep/cmd/dep
       - run: dep ensure
       - save_cache:
-          key: v2-pkg-cache-{{ checksum "Gopkg.lock" }}
+          key: v1-pkg-cache-{{ checksum "/go/src/github.com/longkey1/diary/Gopkg.lock" }}
           paths:
             - vendor
+      - run: go get -u github.com/mitchellh/gox
+      - run: gox --osarch "darwin/amd64 linux/amd64 windows/amd64" --output "dist/{{.Dir}}_{{.OS}}_{{.Arch}}"
+      - run: go build -o ./bin/diary
+      - persist_to_workspace:
+          root: .
+          paths:
+            - bin
+            - dist
   release:
     docker:
       - image: circleci/golang:1.10
     working_directory: /go/src/github.com/longkey1/diary
     steps:
       - checkout
-      - restore_cache:
-          key: v2-pkg-cache-{{ checksum "Gopkg.lock" }}
-      - run: go get -u github.com/mitchellh/gox
-      - run: gox --osarch "darwin/amd64 linux/amd64 windows/amd64" --output "dist/{{.Dir}}_{{.OS}}_{{.Arch}}"
-      - run: go build -o ./bin/diary
+      - attach_workspace:
+          at: .
       - run: go get -u github.com/tcnksm/ghr
       - run: ghr -t $GITHUB_TOKEN -u $CIRCLE_USERNAME -r $CIRCLE_PROJECT_REPONAME v$(./bin/diary --version | cut -d " " -f 3) dist/
 workflows:
