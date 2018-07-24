@@ -1,6 +1,9 @@
 package main
 
 import (
+	"os/exec"
+	"time"
+	"os"
 	"fmt"
 	"io"
 
@@ -29,6 +32,8 @@ type CLI struct {
 // Config ...
 type Config struct {
 	BaseDir string `toml:"base_dir"`
+	FilePathFormat string `toml:"file_path_format"`
+	Editor string `toml:"editor"`
 }
 
 // Run ...
@@ -54,11 +59,28 @@ func (c *CLI) Run(args []string) int {
 			Usage:   "open file",
 			Action: func(c *cli.Context) error {
 				cnf, err := loadConfig(configPath)
-				fmt.Println("base directory: ", cnf.BaseDir)
 				if err != nil {
 					return err
 				}
-				fmt.Println("open file: ", c.Args().First())
+				pt := fmt.Sprintf("%s/%s", cnf.BaseDir, cnf.FilePathFormat)
+				filepath := time.Now().Format(pt)
+				fmt.Printf("%v", fileExists(filepath))
+				if fileExists(filepath) == false {
+    			file, err := os.OpenFile(filepath, os.O_WRONLY|os.O_CREATE, 0644)
+    			if err != nil {
+						return err
+    			}
+    			fmt.Fprintln(file, time.Now().Format("# 2006/01/02")) 
+    			file.Close()
+				}
+				cmd := exec.Command(cnf.Editor, filepath)
+				cmd.Stdin = os.Stdin
+				cmd.Stdout = os.Stdout
+				cmd.Stderr = os.Stderr
+				err = cmd.Run()
+				if err != nil {
+					return err
+				}
 				return nil
 			},
 		},
@@ -69,7 +91,6 @@ func (c *CLI) Run(args []string) int {
 		fmt.Fprintln(c.errStream, err)
 		return ExitCodeError
 	}
-
 	return ExitCodeOK
 }
 
@@ -78,7 +99,6 @@ func defaultConfigPath() string {
 	if err != nil {
 		panic(err)
 	}
-
 	return fmt.Sprintf("%s/.config/diary/%s", home, DefaultConfigFileName)
 }
 
@@ -88,4 +108,9 @@ func loadConfig(path string) (*Config, error) {
 		return nil, err
 	}
 	return c, nil
+}
+
+func fileExists(filename string) bool {
+	_, err := os.Stat(filename)
+	return err == nil
 }
