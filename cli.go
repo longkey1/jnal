@@ -99,7 +99,8 @@ func (c *CLI) Run(args []string) int {
 					return err
 				}
 
-				cmdStr, err := buildCommandString(cnf.SearchCommand, cnf.BaseDirectory, cnf.FileName, ""); if err != nil {
+				ptn := c.Args().First()
+				cmdStr, err := buildCommandString(cnf.SearchCommand, cnf.BaseDirectory, cnf.FileName, ptn); if err != nil {
 					return err
 				}
 				cmd, err := buildCommnad(cmdStr); if err != nil {
