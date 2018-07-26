@@ -2,18 +2,18 @@ package main
 
 import (
 	"bytes"
-	"text/template"
 	"errors"
-	"os/exec"
-	"time"
-	"os"
 	"fmt"
 	"io"
+	"os"
+	"os/exec"
+	"text/template"
+	"time"
 
 	"github.com/BurntSushi/toml"
+	shellwords "github.com/mattn/go-shellwords"
 	"github.com/mitchellh/go-homedir"
 	"github.com/urfave/cli"
-	shellwords "github.com/mattn/go-shellwords"
 )
 
 const (
@@ -36,8 +36,8 @@ type CLI struct {
 // Config ...
 type Config struct {
 	BaseDirectory string `toml:"base_directory"`
-	FileName string `toml:"file_name"`
-	OpenCommand string `toml:"open_command"`
+	FileName      string `toml:"file_name"`
+	OpenCommand   string `toml:"open_command"`
 	SearchCommand string `toml:"search_command"`
 }
 
@@ -63,17 +63,18 @@ func (c *CLI) Run(args []string) int {
 			Aliases: []string{"o"},
 			Usage:   "open file",
 			Action: func(c *cli.Context) error {
-				cnf, err := loadConfig(configPath); if err != nil {
+				cnf, err := loadConfig(configPath)
+				if err != nil {
 					return err
 				}
 				filepath := time.Now().Format(fmt.Sprintf("%s/%s", cnf.BaseDirectory, cnf.FileName))
 				if fileExists(filepath) == false {
-    			file, err := os.OpenFile(filepath, os.O_WRONLY|os.O_CREATE, 0644)
-    			if err != nil {
+					file, err := os.OpenFile(filepath, os.O_WRONLY|os.O_CREATE, 0644)
+					if err != nil {
 						return err
-    			}
-    			fmt.Fprintln(file, time.Now().Format("# 2006/01/02")) 
-    			file.Close()
+					}
+					fmt.Fprintln(file, time.Now().Format("# 2006/01/02"))
+					file.Close()
 				}
 
 				cmdFmt := template.Must(template.New("cmd").Parse(cnf.OpenCommand))
@@ -84,11 +85,12 @@ func (c *CLI) Run(args []string) int {
 				if err != nil {
 					return err
 				}
-				cw, err := shellwords.Parse(openCmd.String()); if err != nil {
+				cw, err := shellwords.Parse(openCmd.String())
+				if err != nil {
 					return err
 				}
 
-				var cmd *exec.Cmd
+				cmd := &exec.Cmd{}
 				switch len(cw) {
 				case 0:
 					return errors.New("Not defined open command")
@@ -100,7 +102,50 @@ func (c *CLI) Run(args []string) int {
 				cmd.Stdin = os.Stdin
 				cmd.Stdout = os.Stdout
 				cmd.Stderr = os.Stderr
-				err = cmd.Run(); if err != nil {
+				err = cmd.Run()
+				if err != nil {
+					return err
+				}
+				return nil
+			},
+		}, {
+			Name:    "search",
+			Aliases: []string{"s"},
+			Usage:   "search file",
+			Action: func(c *cli.Context) error {
+				cnf, err := loadConfig(configPath)
+				if err != nil {
+					return err
+				}
+
+				cmdFmt := template.Must(template.New("cmd").Parse(cnf.SearchCommand))
+				searchCmd := new(bytes.Buffer)
+				err = cmdFmt.Execute(searchCmd, map[string]interface{}{
+					"Pattern":       c.Args().First(),
+					"BaseDirectory": cnf.BaseDirectory,
+				})
+				if err != nil {
+					return err
+				}
+				cw, err := shellwords.Parse(searchCmd.String())
+				if err != nil {
+					return err
+				}
+
+				cmd := &exec.Cmd{}
+				switch len(cw) {
+				case 0:
+					return errors.New("Not defined open command")
+				case 1:
+					cmd = exec.Command(cw[0])
+				default:
+					cmd = exec.Command(cw[0], cw[1:]...)
+				}
+				cmd.Stdin = os.Stdin
+				cmd.Stdout = os.Stdout
+				cmd.Stderr = os.Stderr
+				err = cmd.Run()
+				if err != nil {
 					return err
 				}
 				return nil
