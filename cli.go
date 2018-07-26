@@ -1,6 +1,9 @@
 package main
 
 import (
+	"bytes"
+	"text/template"
+	"errors"
 	"os/exec"
 	"time"
 	"os"
@@ -10,11 +13,12 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/mitchellh/go-homedir"
 	"github.com/urfave/cli"
+	shellwords "github.com/mattn/go-shellwords"
 )
 
 const (
 	// Version
-	Version string = "0.0.1"
+	Version string = "0.0.2"
 	// ExitCodeOK ...
 	ExitCodeOK int = 0
 	// ExitCodeError ..
@@ -31,9 +35,10 @@ type CLI struct {
 
 // Config ...
 type Config struct {
-	BaseDir string `toml:"base_dir"`
-	FilePathFormat string `toml:"file_path_format"`
-	Editor string `toml:"editor"`
+	BaseDirectory string `toml:"base_directory"`
+	FileName string `toml:"file_name"`
+	OpenCommand string `toml:"open_command"`
+	SearchCommand string `toml:"search_command"`
 }
 
 // Run ...
@@ -58,13 +63,10 @@ func (c *CLI) Run(args []string) int {
 			Aliases: []string{"o"},
 			Usage:   "open file",
 			Action: func(c *cli.Context) error {
-				cnf, err := loadConfig(configPath)
-				if err != nil {
+				cnf, err := loadConfig(configPath); if err != nil {
 					return err
 				}
-				pt := fmt.Sprintf("%s/%s", cnf.BaseDir, cnf.FilePathFormat)
-				filepath := time.Now().Format(pt)
-				fmt.Printf("%v", fileExists(filepath))
+				filepath := time.Now().Format(fmt.Sprintf("%s/%s", cnf.BaseDirectory, cnf.FileName))
 				if fileExists(filepath) == false {
     			file, err := os.OpenFile(filepath, os.O_WRONLY|os.O_CREATE, 0644)
     			if err != nil {
@@ -73,12 +75,32 @@ func (c *CLI) Run(args []string) int {
     			fmt.Fprintln(file, time.Now().Format("# 2006/01/02")) 
     			file.Close()
 				}
-				cmd := exec.Command(cnf.Editor, filepath)
+
+				cmdFmt := template.Must(template.New("cmd").Parse(cnf.OpenCommand))
+				openCmd := new(bytes.Buffer)
+				err = cmdFmt.Execute(openCmd, map[string]interface{}{
+					"TodayFile": filepath,
+				})
+				if err != nil {
+					return err
+				}
+				cw, err := shellwords.Parse(openCmd.String()); if err != nil {
+					return err
+				}
+
+				var cmd *exec.Cmd
+				switch len(cw) {
+				case 0:
+					return errors.New("Not defined open command")
+				case 1:
+					cmd = exec.Command(cw[0])
+				default:
+					cmd = exec.Command(cw[0], cw[1:]...)
+				}
 				cmd.Stdin = os.Stdin
 				cmd.Stdout = os.Stdout
 				cmd.Stderr = os.Stderr
-				err = cmd.Run()
-				if err != nil {
+				err = cmd.Run(); if err != nil {
 					return err
 				}
 				return nil

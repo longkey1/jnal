@@ -8,6 +8,12 @@
   version = "v0.3.0"
 
 [[projects]]
+  name = "github.com/mattn/go-shellwords"
+  packages = ["."]
+  revision = "02e3cf038dcea8290e44424da473dd12be796a8a"
+  version = "v1.0.3"
+
+[[projects]]
   branch = "master"
   name = "github.com/mitchellh/go-homedir"
   packages = ["."]
@@ -22,6 +28,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d4da0560e53877c3584b305b434c142a416d768ce04d73f0280da0f8f3a426e9"
+  inputs-digest = "7aedb9705d59fcde40b4cfe067b9dde718345774a019f6f91d2ac701f14e103d"
   solver-name = "gps-cdcl"
   solver-version = 1

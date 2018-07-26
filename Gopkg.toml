@@ -30,6 +30,10 @@
   version = "0.3.0"
 
 [[constraint]]
+  name = "github.com/mattn/go-shellwords"
+  version = "1.0.3"
+
+[[constraint]]
   branch = "master"
   name = "github.com/mitchellh/go-homedir"
 
