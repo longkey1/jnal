@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -18,7 +17,7 @@ import (
 
 const (
 	// Version
-	Version string = "0.1.0"
+	Version string = "0.1.1"
 	// ExitCodeOK ...
 	ExitCodeOK int = 0
 	// ExitCodeError ..
@@ -67,9 +66,10 @@ func (c *CLI) Run(args []string) int {
 				if err != nil {
 					return err
 				}
-				filepath := time.Now().Format(fmt.Sprintf("%s/%s", cnf.BaseDirectory, cnf.FileName))
-				if fileExists(filepath) == false {
-					file, err := os.OpenFile(filepath, os.O_WRONLY|os.O_CREATE, 0644)
+
+				todayFile := buildTodayFile(cnf.BaseDirectory, cnf.FileName)
+				if fileExists(todayFile) == false {
+					file, err := os.OpenFile(todayFile, os.O_WRONLY|os.O_CREATE, 0644)
 					if err != nil {
 						return err
 					}
@@ -77,35 +77,16 @@ func (c *CLI) Run(args []string) int {
 					file.Close()
 				}
 
-				cmdFmt := template.Must(template.New("cmd").Parse(cnf.OpenCommand))
-				openCmd := new(bytes.Buffer)
-				err = cmdFmt.Execute(openCmd, map[string]interface{}{
-					"TodayFile": filepath,
-				})
-				if err != nil {
+				cmdStr, err := buildCommandString(cnf.OpenCommand, cnf.BaseDirectory, cnf.FileName, ""); if err != nil {
 					return err
 				}
-				cw, err := shellwords.Parse(openCmd.String())
-				if err != nil {
+				cmd, err := buildCommnad(cmdStr); if err != nil {
+					return err
+				}
+				err = cmd.Run(); if err != nil {
 					return err
 				}
 
-				cmd := &exec.Cmd{}
-				switch len(cw) {
-				case 0:
-					return errors.New("Not defined open command")
-				case 1:
-					cmd = exec.Command(cw[0])
-				default:
-					cmd = exec.Command(cw[0], cw[1:]...)
-				}
-				cmd.Stdin = os.Stdin
-				cmd.Stdout = os.Stdout
-				cmd.Stderr = os.Stderr
-				err = cmd.Run()
-				if err != nil {
-					return err
-				}
 				return nil
 			},
 		}, {
@@ -118,36 +99,16 @@ func (c *CLI) Run(args []string) int {
 					return err
 				}
 
-				cmdFmt := template.Must(template.New("cmd").Parse(cnf.SearchCommand))
-				searchCmd := new(bytes.Buffer)
-				err = cmdFmt.Execute(searchCmd, map[string]interface{}{
-					"Pattern":       c.Args().First(),
-					"BaseDirectory": cnf.BaseDirectory,
-				})
-				if err != nil {
+				cmdStr, err := buildCommandString(cnf.SearchCommand, cnf.BaseDirectory, cnf.FileName, ""); if err != nil {
 					return err
 				}
-				cw, err := shellwords.Parse(searchCmd.String())
-				if err != nil {
+				cmd, err := buildCommnad(cmdStr); if err != nil {
+					return err
+				}
+				err = cmd.Run(); if err != nil {
 					return err
 				}
 
-				cmd := &exec.Cmd{}
-				switch len(cw) {
-				case 0:
-					return errors.New("Not defined open command")
-				case 1:
-					cmd = exec.Command(cw[0])
-				default:
-					cmd = exec.Command(cw[0], cw[1:]...)
-				}
-				cmd.Stdin = os.Stdin
-				cmd.Stdout = os.Stdout
-				cmd.Stderr = os.Stderr
-				err = cmd.Run()
-				if err != nil {
-					return err
-				}
 				return nil
 			},
 		},
@@ -180,4 +141,43 @@ func loadConfig(path string) (*Config, error) {
 func fileExists(filename string) bool {
 	_, err := os.Stat(filename)
 	return err == nil
+}
+
+func buildTodayFile(dir string, file string) string {
+	return time.Now().Format(fmt.Sprintf("%s/%s", dir, file))
+}
+
+func buildCommandString(tpl string, dir string, file string, pattern string) (string, error) {
+	t := template.Must(template.New("").Parse(tpl))
+	cmd := new(bytes.Buffer)
+	err := t.Execute(cmd, map[string]interface{}{
+		"TodayFile": buildTodayFile(dir, file),
+		"Pattern": pattern,
+		"BaseDirectory": dir,
+	})
+	if err != nil {
+		return "", err
+	}
+	return cmd.String(), nil
+}
+
+func buildCommnad(cmdStr string) (*exec.Cmd, error) {
+	sw, err := shellwords.Parse(cmdStr); if err != nil {
+		return nil, err
+	}
+
+	cmd := &exec.Cmd{}
+	switch len(sw) {
+	case 0:
+		return nil, fmt.Errorf("Not defined command string: %s", cmdStr)
+	case 1:
+		cmd = exec.Command(sw[0])
+	default:
+		cmd = exec.Command(sw[0], sw[1:]...)
+	}
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	return cmd, nil
 }
