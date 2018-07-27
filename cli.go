@@ -163,7 +163,7 @@ func (c *CLI) buildCommand(tpl string, dir string, file string, pattern string) 
 	cmd := &exec.Cmd{}
 	switch len(sw) {
 	case 0:
-		return nil, fmt.Errorf("Not defined command string: %s", cmdBuf.String())
+		return nil, fmt.Errorf("not defined command string: %s", cmdBuf.String())
 	case 1:
 		cmd = exec.Command(sw[0])
 	default:
