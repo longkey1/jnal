@@ -4,20 +4,23 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"os/exec"
 	"text/template"
 	"time"
 
+	"github.com/blang/semver"
 	"github.com/BurntSushi/toml"
 	shellwords "github.com/mattn/go-shellwords"
 	"github.com/mitchellh/go-homedir"
+	"github.com/rhysd/go-github-selfupdate/selfupdate"
 	"github.com/urfave/cli"
 )
 
 const (
 	// Version
-	Version string = "0.1.3"
+	Version string = "0.2.0"
 	// ExitCodeOK ...
 	ExitCodeOK int = 0
 	// ExitCodeError ..
@@ -113,7 +116,25 @@ func (c *CLI) Run(args []string) int {
 
 				return nil
 			},
-		},
+		}, {
+			Name:    "self-update",
+			Aliases: []string{"su"},
+			Usage:   "self update",
+			Action: func(ctx *cli.Context) error {
+			  v := semver.MustParse(Version)
+			  latest, err := selfupdate.UpdateSelf(v, "longkey1/diary"); if err != nil {
+			  	return err
+			  }
+			  if latest.Version.Equals(v) {
+			  	// latest version is the same as current version. It means current binary is up to date.
+			  	log.Println("current binary is the latest version", Version)
+			  } else {
+			  	log.Println("successfully updated to version", latest.Version)
+			  	log.Println("release note:\n", latest.ReleaseNotes)
+				}
+				return nil
+			},
+	  },
 	}
 	app.Writer = c.outStream
 	app.ErrWriter = c.errStream
