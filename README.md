@@ -43,11 +43,12 @@ You can download binary from [release page](https://github.com/longkey1/diary/re
 ```toml
 # $HOME/.config/diary/config.toml
 
-base_directory = "/home/longkey1/Documents/Diary"
+base_directory = "/home/longkey1/Dropbox/Documents/Diary"
 file_name = "2006-01-02.md"
 open_command = "vim {{ .TodayFile }}"
 list_command = "selected=$(pt -g .md \"{{ .BaseDirectory }}\" | fzf --query \"$LBUFFER\"); [[ -n ${selected} ]] && env LESS=\"-R -X\" less ${selected} || true"
-search_command = "selected=$(pt \"{{ .Pattern }}\" \"{{ .BaseDirectory }}\" | fzf --query \"$LBUFFER\" | awk -F : '{print \"-c \" $2 \" \" $1}'); [[ -n ${selected} ]] && vim ${selected} || true"
+search_command = "selected=$(pt \"{{ .Pattern }}\" \"{{ .BaseDirectory }}\" | fzf --query \"$LBUFFER\" | awk -F : '{print \"-c \" $2 \" \" $1}'); [[ -n ${selected} ]] && vim $selected || true"
+
 ```
 
-`filaname` is using [golang's time format](https://golang.org/src/time/format.go).
+`fila_name` is using [golang's time format](https://golang.org/src/time/format.go).
