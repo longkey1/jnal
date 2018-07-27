@@ -12,7 +12,6 @@ import (
 
 	"github.com/blang/semver"
 	"github.com/BurntSushi/toml"
-	shellwords "github.com/mattn/go-shellwords"
 	"github.com/mitchellh/go-homedir"
 	"github.com/rhysd/go-github-selfupdate/selfupdate"
 	"github.com/urfave/cli"
@@ -20,7 +19,7 @@ import (
 
 const (
 	// Version
-	Version string = "0.2.2"
+	Version string = "0.2.3"
 	// ExitCodeOK ...
 	ExitCodeOK int = 0
 	// ExitCodeError ..
@@ -146,8 +145,8 @@ func (c *CLI) Run(args []string) int {
 
 func (c *CLI) buildCommand(tpl string, dir string, file string, pattern string) (*exec.Cmd, error) {
 	t := template.Must(template.New("").Parse(tpl))
-	cmdBuf := new(bytes.Buffer)
-	err := t.Execute(cmdBuf, map[string]interface{}{
+	cmdbuf := new(bytes.Buffer)
+	err := t.Execute(cmdbuf, map[string]interface{}{
 		"TodayFile": buildTodayFile(dir, file),
 		"Pattern": pattern,
 		"BaseDirectory": dir,
@@ -156,19 +155,7 @@ func (c *CLI) buildCommand(tpl string, dir string, file string, pattern string) 
 		return nil, err
 	}
 
-	sw, err := shellwords.Parse(cmdBuf.String()); if err != nil {
-		return nil, err
-	}
-
-	cmd := &exec.Cmd{}
-	switch len(sw) {
-	case 0:
-		return nil, fmt.Errorf("not defined command string: %s", cmdBuf.String())
-	case 1:
-		cmd = exec.Command(sw[0])
-	default:
-		cmd = exec.Command(sw[0], sw[1:]...)
-	}
+	cmd := exec.Command("sh", "-c", cmdbuf.String())
 	cmd.Stdin = c.inStream
 	cmd.Stdout = c.outStream
 	cmd.Stderr = c.errStream
