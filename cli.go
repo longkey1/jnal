@@ -20,7 +20,7 @@ import (
 
 const (
 	// Version
-	Version string = "0.2.0"
+	Version string = "0.2.1"
 	// ExitCodeOK ...
 	ExitCodeOK int = 0
 	// ExitCodeError ..
@@ -81,12 +81,10 @@ func (c *CLI) Run(args []string) int {
 					file.Close()
 				}
 
-				cmdStr, err := buildCommandString(cnf.OpenCommand, cnf.BaseDirectory, cnf.FileName, ""); if err != nil {
+				cmd, err := c.buildCommand(cnf.OpenCommand, cnf.BaseDirectory, cnf.FileName, ""); if err != nil {
 					return err
 				}
-				cmd, err := c.buildCommnad(cmdStr); if err != nil {
-					return err
-				}
+
 				err = cmd.Run(); if err != nil {
 					return err
 				}
@@ -103,13 +101,10 @@ func (c *CLI) Run(args []string) int {
 					return err
 				}
 
-				ptn := ctx.Args().First()
-				cmdStr, err := buildCommandString(cnf.SearchCommand, cnf.BaseDirectory, cnf.FileName, ptn); if err != nil {
+				cmd, err := c.buildCommand(cnf.SearchCommand, cnf.BaseDirectory, cnf.FileName, ctx.Args().First()); if err != nil {
 					return err
 				}
-				cmd, err := c.buildCommnad(cmdStr); if err != nil {
-					return err
-				}
+
 				err = cmd.Run(); if err != nil {
 					return err
 				}
@@ -147,15 +142,26 @@ func (c *CLI) Run(args []string) int {
 	return ExitCodeOK
 }
 
-func (c *CLI) buildCommnad(cmdStr string) (*exec.Cmd, error) {
-	sw, err := shellwords.Parse(cmdStr); if err != nil {
+func (c *CLI) buildCommand(tpl string, dir string, file string, pattern string) (*exec.Cmd, error) {
+	t := template.Must(template.New("").Parse(tpl))
+	cmdBuf := new(bytes.Buffer)
+	err := t.Execute(cmdBuf, map[string]interface{}{
+		"TodayFile": buildTodayFile(dir, file),
+		"Pattern": pattern,
+		"BaseDirectory": dir,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	sw, err := shellwords.Parse(cmdBuf.String()); if err != nil {
 		return nil, err
 	}
 
 	cmd := &exec.Cmd{}
 	switch len(sw) {
 	case 0:
-		return nil, fmt.Errorf("Not defined command string: %s", cmdStr)
+		return nil, fmt.Errorf("Not defined command string: %s", cmdBuf.String())
 	case 1:
 		cmd = exec.Command(sw[0])
 	default:
@@ -191,18 +197,4 @@ func fileExists(filename string) bool {
 
 func buildTodayFile(dir string, file string) string {
 	return time.Now().Format(fmt.Sprintf("%s/%s", dir, file))
-}
-
-func buildCommandString(tpl string, dir string, file string, pattern string) (string, error) {
-	t := template.Must(template.New("").Parse(tpl))
-	cmd := new(bytes.Buffer)
-	err := t.Execute(cmd, map[string]interface{}{
-		"TodayFile": buildTodayFile(dir, file),
-		"Pattern": pattern,
-		"BaseDirectory": dir,
-	})
-	if err != nil {
-		return "", err
-	}
-	return cmd.String(), nil
 }
