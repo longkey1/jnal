@@ -51,7 +51,7 @@ func (c *CLI) Run(args []string) int {
 	app := cli.NewApp()
 	app.Name = "diary"
 	app.Version = Version
-	app.Usage = "text file generator for diary"
+	app.Usage = "Text file based diary command"
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:        "config, c",
@@ -96,7 +96,7 @@ func (c *CLI) Run(args []string) int {
 		}, {
 			Name:    "list",
 			Aliases: []string{"l"},
-			Usage:   "list files",
+			Usage:   "list file",
 			Action: func(ctx *cli.Context) error {
 				cnf, err := loadConfig(configPath)
 				if err != nil {

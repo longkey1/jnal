@@ -1,11 +1,11 @@
 # diary
 
-Text file generator for diary.
+Text file based diary command.
 
 ## USAGE
 ```
 NAME:
-   diary - text file generator for diary
+   diary - text file based diary command
 
 USAGE:
    diary [global options] command [command options] [arguments...]
