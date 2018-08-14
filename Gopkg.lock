@@ -22,8 +22,8 @@
 [[projects]]
   name = "github.com/google/go-github"
   packages = ["github"]
-  revision = "e48060a28fac52d0f1cb758bc8b87c07bac4a87d"
-  version = "v15.0.0"
+  revision = "747f93dd9b489bd56f7442b3c42bfea12800a75b"
+  version = "v17.0.0"
 
 [[projects]]
   branch = "master"
@@ -42,16 +42,10 @@
   revision = "8152e7eb6ccf8679a64582a66b78519688d156ad"
 
 [[projects]]
-  name = "github.com/mattn/go-shellwords"
-  packages = ["."]
-  revision = "02e3cf038dcea8290e44424da473dd12be796a8a"
-  version = "v1.0.3"
-
-[[projects]]
   branch = "master"
   name = "github.com/mitchellh/go-homedir"
   packages = ["."]
-  revision = "3864e76763d94a6df2f9960b16a20a33da9f9a66"
+  revision = "58046073cbffe2f25d425fe1331102f55cf719de"
 
 [[projects]]
   branch = "master"
@@ -89,7 +83,7 @@
     "context",
     "context/ctxhttp"
   ]
-  revision = "3673e40ba22529d22c3fd7c93e97b0ce50fa7bdd"
+  revision = "c39426892332e1bb5ec0a434a079bf82f5d30c54"
 
 [[projects]]
   branch = "master"
@@ -117,6 +111,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "05eb2a6a5a67863479019c0aaa18ac7ae074cfd208cd0b96c00ab344f63360d2"
+  inputs-digest = "f1c43b2614b8a5d2771d4bfa5ca8452cda7f7a830c2d26cbfca0c43436bbf56e"
   solver-name = "gps-cdcl"
   solver-version = 1
