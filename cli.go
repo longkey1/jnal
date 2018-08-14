@@ -19,7 +19,7 @@ import (
 
 const (
 	// Version
-	Version string = "0.3.0"
+	Version string = "0.4.0"
 	// ExitCodeOK ...
 	ExitCodeOK int = 0
 	// ExitCodeError ..
@@ -71,17 +71,18 @@ func (c *CLI) Run(args []string) int {
 					return err
 				}
 
-				todayFile := buildTodayFile(cnf.BaseDirectory, cnf.FileName)
-				if fileExists(todayFile) == false {
-					file, err := os.OpenFile(todayFile, os.O_WRONLY|os.O_CREATE, 0644)
+				targetDay := time.Now().AddDate(0, 0, ctx.Int("before")*-1)
+				dayFile := buildTargetDayFile(cnf.BaseDirectory, cnf.FileName, targetDay)
+				if fileExists(dayFile) == false {
+					file, err := os.OpenFile(dayFile, os.O_WRONLY|os.O_CREATE, 0644)
 					if err != nil {
 						return err
 					}
-					fmt.Fprintln(file, time.Now().Format("# 2006/01/02"))
+					fmt.Fprintln(file, targetDay.Format("# 2006/01/02"))
 					file.Close()
 				}
 
-				cmd, err := c.buildCommand(cnf.OpenCommand, cnf.BaseDirectory, cnf.FileName, "")
+				cmd, err := c.buildCommand(cnf.OpenCommand, cnf.BaseDirectory, dayFile, "")
 				if err != nil {
 					return err
 				}
@@ -93,6 +94,12 @@ func (c *CLI) Run(args []string) int {
 
 				return nil
 			},
+			Flags: []cli.Flag{
+				cli.IntFlag{
+					Name:  "before, b",
+					Value: 0,
+				},
+			},
 		}, {
 			Name:    "list",
 			Aliases: []string{"l"},
@@ -103,7 +110,7 @@ func (c *CLI) Run(args []string) int {
 					return err
 				}
 
-				cmd, err := c.buildCommand(cnf.ListCommand, cnf.BaseDirectory, cnf.FileName, "")
+				cmd, err := c.buildCommand(cnf.ListCommand, cnf.BaseDirectory, "", "")
 				if err != nil {
 					return err
 				}
@@ -125,7 +132,7 @@ func (c *CLI) Run(args []string) int {
 					return err
 				}
 
-				cmd, err := c.buildCommand(cnf.SearchCommand, cnf.BaseDirectory, cnf.FileName, ctx.Args().First())
+				cmd, err := c.buildCommand(cnf.SearchCommand, cnf.BaseDirectory, "", ctx.Args().First())
 				if err != nil {
 					return err
 				}
@@ -171,19 +178,19 @@ func (c *CLI) Run(args []string) int {
 	return ExitCodeOK
 }
 
-func (c *CLI) buildCommand(tpl string, dir string, file string, pattern string) (*exec.Cmd, error) {
+func (c *CLI) buildCommand(tpl string, dir string, dayFile string, pattern string) (*exec.Cmd, error) {
 	t := template.Must(template.New("").Parse(tpl))
-	cmdbuf := new(bytes.Buffer)
-	err := t.Execute(cmdbuf, map[string]interface{}{
-		"TodayFile":     buildTodayFile(dir, file),
-		"Pattern":       pattern,
+	buf := new(bytes.Buffer)
+	err := t.Execute(buf, map[string]interface{}{
 		"BaseDirectory": dir,
+		"DayFile": dayFile,
+		"Pattern": pattern,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	cmd := exec.Command("sh", "-c", cmdbuf.String())
+	cmd := exec.Command("sh", "-c", buf.String())
 	cmd.Stdin = c.inStream
 	cmd.Stdout = c.outStream
 	cmd.Stderr = c.errStream
@@ -212,6 +219,6 @@ func fileExists(filename string) bool {
 	return err == nil
 }
 
-func buildTodayFile(dir string, file string) string {
-	return time.Now().Format(fmt.Sprintf("%s/%s", dir, file))
+func buildTargetDayFile(dir string, file string, day time.Time) string {
+	return day.Format(fmt.Sprintf("%s/%s", dir, file))
 }
