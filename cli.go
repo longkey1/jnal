@@ -19,7 +19,7 @@ import (
 
 const (
 	// Version
-	Version string = "0.4.0"
+	Version string = "0.4.1"
 	// ExitCodeOK ...
 	ExitCodeOK int = 0
 	// ExitCodeError ..
@@ -71,7 +71,11 @@ func (c *CLI) Run(args []string) int {
 					return err
 				}
 
-				targetDay := time.Now().AddDate(0, 0, ctx.Int("before")*-1)
+				before := 0
+				if ctx.Bool("yesterday") {
+					before = -1
+				}
+				targetDay := time.Now().AddDate(0, 0, before)
 				dayFile := buildTargetDayFile(cnf.BaseDirectory, cnf.FileName, targetDay)
 				if fileExists(dayFile) == false {
 					file, err := os.OpenFile(dayFile, os.O_WRONLY|os.O_CREATE, 0644)
@@ -95,9 +99,8 @@ func (c *CLI) Run(args []string) int {
 				return nil
 			},
 			Flags: []cli.Flag{
-				cli.IntFlag{
-					Name:  "before, b",
-					Value: 0,
+				cli.BoolFlag{
+					Name:  "yesterday, y",
 				},
 			},
 		}, {
