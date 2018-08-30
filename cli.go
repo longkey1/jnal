@@ -223,5 +223,5 @@ func fileExists(filename string) bool {
 }
 
 func buildTargetDayFile(dir string, file string, day time.Time) string {
-	return day.Format(fmt.Sprintf("%s/%s", dir, file))
+	return fmt.Sprintf("%s/%s", dir, day.Format(file))
 }
