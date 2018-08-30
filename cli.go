@@ -19,7 +19,7 @@ import (
 
 const (
 	// Version
-	Version string = "0.4.1"
+	Version string = "0.4.2"
 	// ExitCodeOK ...
 	ExitCodeOK int = 0
 	// ExitCodeError ..
