@@ -5,30 +5,30 @@ Text file based diary command.
 ## USAGE
 ```
 NAME:
-   diary - text file based diary command
+   diary - Text file based diary command
 
 USAGE:
    diary [global options] command [command options] [arguments...]
 
 VERSION:
-   0.4.0
+   0.4.x
 
 COMMANDS:
      open, o          open file
-     list, l          list files
+     list, l          list file
      search, s        search file
      self-update, su  self update
      help, h          Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
-   --config FILE, -c FILE  Load configration from FILE (default: "$HOME/.config/diary/config.toml")
+   --config FILE, -c FILE  Load configration from FILE (default: "/home/moto/.config/diary/config.toml")
    --help, -h              show help
    --version, -v           print the version
 ```
 
 ## Installation
 
-You can download binary from [release page](https://github.com/longkey1/diary/releases).
+You can download binary from [release page](https://github.com/longkey1/diary-bin/releases).
 
 ## Configuration
 
