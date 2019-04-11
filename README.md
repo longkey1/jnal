@@ -28,7 +28,7 @@ GLOBAL OPTIONS:
 
 ## Installation
 
-You can download binary from [release page](https://github.com/longkey1/diary-bin/releases).
+You can download binary from [release page](https://github.com/longkey1/diary/releases).
 
 ## Configuration
 
