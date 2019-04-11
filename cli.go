@@ -19,7 +19,7 @@ import (
 
 const (
 	// Version
-	Version string = "0.5.0"
+	Version string = "0.5.1"
 	// ExitCodeOK ...
 	ExitCodeOK int = 0
 	// ExitCodeError ..
@@ -160,7 +160,7 @@ func (c *CLI) Run(args []string) int {
 			Usage:   "self update",
 			Action: func(ctx *cli.Context) error {
 				v := semver.MustParse(Version)
-				latest, err := selfupdate.UpdateSelf(v, "longkey1/diary-bin")
+				latest, err := selfupdate.UpdateSelf(v, "longkey1/diary")
 				if err != nil {
 					return err
 				}
