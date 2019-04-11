@@ -32,6 +32,7 @@ const (
 type Config struct {
 	BaseDirectory string `toml:"base_directory"`
 	FileName      string `toml:"file_name"`
+	FileTemplate  string `toml:"file_template"`
 	OpenCommand   string `toml:"open_command"`
 	ListCommand   string `toml:"list_command"`
 	SearchCommand string `toml:"search_command"`
@@ -55,7 +56,7 @@ func (c *CLI) Run(args []string) int {
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:        "config, c",
-			Usage:       "Load configration from `FILE`",
+			Usage:       "Load configuration from `FILE`",
 			Destination: &configPath,
 			Value:       defaultConfigPath(),
 		},
@@ -82,8 +83,14 @@ func (c *CLI) Run(args []string) int {
 					if err != nil {
 						return err
 					}
-					fmt.Fprintln(file, targetDay.Format("# 2006/01/02"))
-					file.Close()
+					_, err = fmt.Fprintln(file, targetDay.Format(cnf.FileTemplate))
+					if err != nil {
+						return err
+					}
+					err = file.Close()
+					if err != nil {
+						return err
+					}
 				}
 
 				cmd, err := c.buildCommand(cnf.OpenCommand, cnf.BaseDirectory, dayFile, "")
@@ -175,7 +182,7 @@ func (c *CLI) Run(args []string) int {
 
 	err := app.Run(args)
 	if err != nil {
-		fmt.Fprintln(c.errStream, err)
+		_, _ = fmt.Fprintln(c.errStream, err)
 		return ExitCodeError
 	}
 	return ExitCodeOK
