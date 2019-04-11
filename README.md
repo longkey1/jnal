@@ -45,6 +45,7 @@ You can download binary from [release page](https://github.com/longkey1/diary-bi
 
 base_directory = "/home/longkey1/Dropbox/Documents/Diary"
 file_name = "2006-01-02.md"
+file_template = "# 2006/01/02"
 open_command = "vim {{ .DayFile }}"
 list_command = "selected=$(pt -g .md \"{{ .BaseDirectory }}\" | fzf --query \"$LBUFFER\"); [[ -n ${selected} ]] && env LESS=\"-R -X\" less ${selected} || true"
 search_command = "selected=$(pt \"{{ .Pattern }}\" \"{{ .BaseDirectory }}\" | fzf --query \"$LBUFFER\" | awk -F : '{print \"-c \" $2 \" \" $1}'); [[ -n ${selected} ]] && vim $selected || true"
