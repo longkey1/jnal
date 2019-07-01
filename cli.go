@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"text/template"
 	"time"
 
@@ -19,7 +20,7 @@ import (
 
 const (
 	// Version
-	Version string = "0.5.1"
+	Version string = "0.5.2"
 	// ExitCodeOK ...
 	ExitCodeOK int = 0
 	// ExitCodeError ..
@@ -78,7 +79,13 @@ func (c *CLI) Run(args []string) int {
 				}
 				targetDay := time.Now().AddDate(0, 0, before)
 				dayFile := buildTargetDayFile(cnf.BaseDirectory, cnf.FileName, targetDay)
-				if fileExists(dayFile) == false {
+				dayDir := filepath.Dir(dayFile)
+				if _, err = os.Stat(dayDir); os.IsNotExist(err) {
+					if err = os.Mkdir(dayDir, 0755); err != nil {
+						return err
+					}
+				}
+				if _, err = os.Stat(dayFile); os.IsNotExist(err) {
 					file, err := os.OpenFile(dayFile, os.O_WRONLY|os.O_CREATE, 0644)
 					if err != nil {
 						return err
@@ -222,11 +229,6 @@ func loadConfig(path string) (*Config, error) {
 		return nil, err
 	}
 	return c, nil
-}
-
-func fileExists(filename string) bool {
-	_, err := os.Stat(filename)
-	return err == nil
 }
 
 func buildTargetDayFile(dir string, file string, day time.Time) string {
