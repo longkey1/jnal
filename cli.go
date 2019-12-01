@@ -81,7 +81,7 @@ func (c *CLI) Run(args []string) int {
 				dayFile := buildTargetDayFile(cnf.BaseDirectory, cnf.FileName, targetDay)
 				dayDir := filepath.Dir(dayFile)
 				if _, err = os.Stat(dayDir); os.IsNotExist(err) {
-					if err = os.Mkdir(dayDir, 0755); err != nil {
+					if err = os.MkdirAll(dayDir, 0755); err != nil {
 						return err
 					}
 				}
