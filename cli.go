@@ -36,7 +36,8 @@ type Config struct {
 	FileTemplate  string `toml:"file_template"`
 	OpenCommand   string `toml:"open_command"`
 	ListCommand   string `toml:"list_command"`
-	SearchCommand string `toml:"search_command"`
+	FindCommand   string `toml:"find_command"`
+	SaveCommand   string `toml:"save_command"`
 }
 
 // CLI ...
@@ -120,7 +121,7 @@ func (c *CLI) Run(args []string) int {
 		}, {
 			Name:    "list",
 			Aliases: []string{"l"},
-			Usage:   "list file",
+			Usage:   "list files",
 			Action: func(ctx *cli.Context) error {
 				cnf, err := loadConfig(configPath)
 				if err != nil {
@@ -140,16 +141,38 @@ func (c *CLI) Run(args []string) int {
 				return nil
 			},
 		}, {
-			Name:    "search",
-			Aliases: []string{"s"},
-			Usage:   "search file",
+			Name:    "find",
+			Aliases: []string{"f"},
+			Usage:   "find files",
 			Action: func(ctx *cli.Context) error {
 				cnf, err := loadConfig(configPath)
 				if err != nil {
 					return err
 				}
 
-				cmd, err := c.buildCommand(cnf.SearchCommand, cnf.BaseDirectory, "", ctx.Args().First())
+				cmd, err := c.buildCommand(cnf.FindCommand, cnf.BaseDirectory, "", ctx.Args().First())
+				if err != nil {
+					return err
+				}
+
+				err = cmd.Run()
+				if err != nil {
+					return err
+				}
+
+				return nil
+			},
+		}, {
+			Name:    "save",
+			Aliases: []string{"s"},
+			Usage:   "save files",
+			Action: func(ctx *cli.Context) error {
+				cnf, err := loadConfig(configPath)
+				if err != nil {
+					return err
+				}
+
+				cmd, err := c.buildCommand(cnf.SaveCommand, cnf.BaseDirectory, "", "")
 				if err != nil {
 					return err
 				}
