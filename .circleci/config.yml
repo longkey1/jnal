@@ -2,17 +2,15 @@ version: 2
 jobs:
   build:
     docker:
-      - image: longkey1/go:1.12
+      - image: circleci/golang:1.13
     working_directory: /go/src/github.com/longkey1/diary
+    environment:
+      GOPATH: "/go"
+      GO111MODULE: "on"
+    resource_class: small
     steps:
       - checkout
-      - restore_cache:
-          key: v1-pkg-cache-{{ checksum "/go/src/github.com/longkey1/diary/Gopkg.lock" }}
-      - run: dep ensure
-      - save_cache:
-          key: v1-pkg-cache-{{ checksum "/go/src/github.com/longkey1/diary/Gopkg.lock" }}
-          paths:
-            - vendor
+      - run: go get -u github.com/mitchellh/gox
       - run: gox --osarch "darwin/amd64 linux/amd64 windows/amd64" --output "dist/{{.Dir}}_{{.OS}}_{{.Arch}}"
       - run: go build -o ./bin/diary
       - persist_to_workspace:
@@ -20,15 +18,19 @@ jobs:
           paths:
             - bin
             - dist
+
   release:
     docker:
-      - image: longkey1/go:1.12
+      - image: circleci/golang:1.13
     working_directory: /go/src/github.com/longkey1/diary
+    resource_class: small
     steps:
       - checkout
       - attach_workspace:
           at: .
+      - run: go get -u github.com/tcnksm/ghr
       - run: ghr -t $GITHUB_TOKEN -u $CIRCLE_USERNAME -r $CIRCLE_PROJECT_REPONAME v$(./bin/diary --version | cut -d " " -f 3) dist/
+
 workflows:
   version: 2
   build_and_release:
