@@ -2,7 +2,7 @@
 
 Text file based diary command.
 
-## USAGE
+## Usage
 
 ```
 diary [global options] command [command options] [arguments...]
