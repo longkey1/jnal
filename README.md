@@ -8,11 +8,12 @@ Text file based diary command.
 diary [global options] command [command options] [arguments...]
 
 COMMANDS:
-     open, o          open file
-     list, l          list file
-     search, s        search file
-     self-update, su  self update
-     help, h          Shows a list of commands or help for one command
+   open, o          open file
+   list, l          list files
+   find, f          find files
+   save, s          save files
+   self-update, su  self update
+   help, h          Shows a list of commands or help for one comma
 
 GLOBAL OPTIONS:
    --config FILE, -c FILE  Load configration from FILE (default: "/home/longkey1/.config/diary/config.toml")
@@ -42,7 +43,8 @@ file_name = "2006-01-02.md"
 file_template = "# 2006-01-02\n"
 open_command = "vim {{ .DayFile }}"
 list_command = "ranger {{ .BaseDirectory }}"
-search_command = "selected=$(pt \"{{ .Pattern }}\" \"{{ .BaseDirectory }}\" | fzf --query \"$LBUFFER\" | awk -F : '{print \"-c \" $2 \" \" $1}'); [[ -n ${selected} ]] && echo $selected || true"
+find_command = "selected=$(pt \"{{ .Pattern }}\" \"{{ .BaseDirectory }}\" | fzf --query \"$LBUFFER\" | awk -F : '{print \"-c \" $2 \" \" $1}'); [[ -n ${selected} ]] && echo $selected || true"
+save_command = "git commit -m "Auto commit by diary command"
 ```
 
 `file_name` or `file_template` are using [golang's time format](https://golang.org/src/time/format.go).
