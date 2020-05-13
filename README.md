@@ -44,7 +44,7 @@ file_template = "# 2006-01-02\n"
 open_command = "vim {{ .DayFile }}"
 list_command = "ranger {{ .BaseDirectory }}"
 find_command = "selected=$(pt \"{{ .Pattern }}\" \"{{ .BaseDirectory }}\" | fzf --query \"$LBUFFER\" | awk -F : '{print \"-c \" $2 \" \" $1}'); [[ -n ${selected} ]] && echo $selected || true"
-save_command = "git commit -m "Auto commit by diary command"
+save_command = "git commit -m \"Auto commit by diary command\""
 ```
 
 `file_name` or `file_template` are using [golang's time format](https://golang.org/src/time/format.go).
