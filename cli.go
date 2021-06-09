@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	Version string = "0.6.0"
+	Version string = "0.7.0"
 	ExitCodeOK int = 0
 	ExitCodeError int = 1
 	DefaultConfigFileName string = "config.toml"
