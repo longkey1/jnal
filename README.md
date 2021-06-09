@@ -29,9 +29,14 @@ You can download binary from [release page](https://github.com/longkey1/diary/re
 
 ### Placeholder
 
-- `{{ .BaseDirectory }}`
-- `{{ .DayFile }}`
-- `{{ .PATTERN }}`
+**file template**
+
+- `{{ .Date }}`
+
+**command**
+- `{{ .BaseDir }}`
+- `{{ .File }}`
+- `{{ .Pattern }}`
 
 ### Sample
 
@@ -39,11 +44,12 @@ You can download binary from [release page](https://github.com/longkey1/diary/re
 # $HOME/.config/diary/config.toml
 
 base_directory = "/home/longkey1/Dropbox/Documents/Diary"
-file_name = "2006-01-02.md"
+date_format = "2006/01/02"
+file_name_format = "2006-01-02.md"
 file_template = "# 2006-01-02\n"
-open_command = "vim {{ .DayFile }}"
-list_command = "ranger {{ .BaseDirectory }}"
-find_command = "selected=$(pt \"{{ .Pattern }}\" \"{{ .BaseDirectory }}\" | fzf --query \"$LBUFFER\" | awk -F : '{print \"-c \" $2 \" \" $1}'); [[ -n ${selected} ]] && echo $selected || true"
+open_command = "vim {{ .File }}"
+list_command = "ranger {{ .BaseDir }}"
+find_command = "selected=$(pt \"{{ .Pattern }}\" \"{{ .BaseDir }}\" | fzf --query \"$LBUFFER\" | awk -F : '{print \"-c \" $2 \" \" $1}'); [[ -n ${selected} ]] && echo $selected || true"
 save_command = "git commit -m \"Auto commit by diary command\""
 ```
 
