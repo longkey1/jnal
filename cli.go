@@ -19,35 +19,29 @@ import (
 )
 
 const (
-	// Version
 	Version string = "0.6.0"
-	// ExitCodeOK ...
 	ExitCodeOK int = 0
-	// ExitCodeError ..
 	ExitCodeError int = 1
-	// DefaultConfigFileName...
 	DefaultConfigFileName string = "config.toml"
 )
 
-// Config ...
 type Config struct {
-	BaseDirectory string `toml:"base_directory"`
-	FileName      string `toml:"file_name"`
-	FileTemplate  string `toml:"file_template"`
-	OpenCommand   string `toml:"open_command"`
-	ListCommand   string `toml:"list_command"`
-	FindCommand   string `toml:"find_command"`
-	SaveCommand   string `toml:"save_command"`
+	BaseDirectory  string `toml:"base_directory"`
+	DateFormat     string `toml:"date_format"`
+	FileNameFormat string `toml:"file_name_format"`
+	FileTemplate   string `toml:"file_template"`
+	OpenCommand    string `toml:"open_command"`
+	ListCommand    string `toml:"list_command"`
+	FindCommand    string `toml:"find_command"`
+	SaveCommand    string `toml:"save_command"`
 }
 
-// CLI ...
 type CLI struct {
 	inStream  io.Reader
 	outStream io.Writer
 	errStream io.Writer
 }
 
-// Run ...
 func (c *CLI) Run(args []string) int {
 	var configPath string
 
@@ -79,8 +73,9 @@ func (c *CLI) Run(args []string) int {
 					before = -1
 				}
 				targetDay := time.Now().AddDate(0, 0, before)
-				dayFile := buildTargetDayFile(cnf.BaseDirectory, cnf.FileName, targetDay)
+				dayFile := buildTargetDayFileName(cnf.BaseDirectory, cnf.FileNameFormat, targetDay)
 				dayDir := filepath.Dir(dayFile)
+				dayDate := targetDay.Format(cnf.DateFormat)
 				if _, err = os.Stat(dayDir); os.IsNotExist(err) {
 					if err = os.MkdirAll(dayDir, 0755); err != nil {
 						return err
@@ -91,7 +86,7 @@ func (c *CLI) Run(args []string) int {
 					if err != nil {
 						return err
 					}
-					_, err = fmt.Fprintln(file, targetDay.Format(cnf.FileTemplate))
+					_, err = fmt.Fprintln(file, buildTargetDayFileContent(cnf.FileTemplate, dayDate))
 					if err != nil {
 						return err
 					}
@@ -101,7 +96,7 @@ func (c *CLI) Run(args []string) int {
 					}
 				}
 
-				cmd, err := c.buildCommand(cnf.OpenCommand, cnf.BaseDirectory, dayFile, "")
+				cmd, err := c.buildCommand(cnf.OpenCommand, cnf.BaseDirectory, dayDate, dayFile, "")
 				if err != nil {
 					return err
 				}
@@ -128,7 +123,7 @@ func (c *CLI) Run(args []string) int {
 					return err
 				}
 
-				cmd, err := c.buildCommand(cnf.ListCommand, cnf.BaseDirectory, "", "")
+				cmd, err := c.buildCommand(cnf.ListCommand, cnf.BaseDirectory, "", "", "")
 				if err != nil {
 					return err
 				}
@@ -150,7 +145,7 @@ func (c *CLI) Run(args []string) int {
 					return err
 				}
 
-				cmd, err := c.buildCommand(cnf.FindCommand, cnf.BaseDirectory, "", ctx.Args().First())
+				cmd, err := c.buildCommand(cnf.FindCommand, cnf.BaseDirectory, "", "", ctx.Args().First())
 				if err != nil {
 					return err
 				}
@@ -172,7 +167,7 @@ func (c *CLI) Run(args []string) int {
 					return err
 				}
 
-				cmd, err := c.buildCommand(cnf.SaveCommand, cnf.BaseDirectory, "", "")
+				cmd, err := c.buildCommand(cnf.SaveCommand, cnf.BaseDirectory, "", "", "")
 				if err != nil {
 					return err
 				}
@@ -218,12 +213,13 @@ func (c *CLI) Run(args []string) int {
 	return ExitCodeOK
 }
 
-func (c *CLI) buildCommand(tpl string, dir string, dayFile string, pattern string) (*exec.Cmd, error) {
+func (c *CLI) buildCommand(tpl string, dir string, date string, file string, pattern string) (*exec.Cmd, error) {
 	t := template.Must(template.New("").Parse(tpl))
 	buf := new(bytes.Buffer)
 	err := t.Execute(buf, map[string]interface{}{
-		"BaseDirectory": dir,
-		"DayFile": dayFile,
+		"BaseDir": dir,
+		"Date": date,
+		"File": file,
 		"Pattern": pattern,
 	})
 	if err != nil {
@@ -254,6 +250,19 @@ func loadConfig(path string) (*Config, error) {
 	return c, nil
 }
 
-func buildTargetDayFile(dir string, file string, day time.Time) string {
+func buildTargetDayFileName(dir string, file string, day time.Time) string {
 	return fmt.Sprintf("%s/%s", dir, day.Format(file))
+}
+
+func buildTargetDayFileContent(tpl string, date string) string {
+	t := template.Must(template.New("").Parse(tpl))
+	buf := new(bytes.Buffer)
+	err := t.Execute(buf, map[string]interface{}{
+		"Date": date,
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	return buf.String()
 }
