@@ -23,10 +23,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// selfupdateCmd represents the selfupdate command
-var selfupdateCmd = &cobra.Command{
-	Use:   "selfupdate",
-	Short: "self update",
+// selfUpdateCmd represents the selfUpdate command
+var selfUpdateCmd = &cobra.Command{
+	Use:   "self-update",
+	Short: "self update binary file",
 	Run: func(cmd *cobra.Command, args []string) {
 		v := semver.MustParse(rootCmd.Version)
 		latest, err := selfupdate.UpdateSelf(v, "longkey1/diary")
@@ -45,7 +45,7 @@ var selfupdateCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(selfupdateCmd)
+	rootCmd.AddCommand(selfUpdateCmd)
 
 	// Here you will define your flags and configuration settings.
 
