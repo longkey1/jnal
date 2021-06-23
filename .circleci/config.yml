@@ -1,12 +1,10 @@
-version: 2
+version: 2.1
+
 jobs:
   build:
     docker:
       - image: circleci/golang:1.16
     working_directory: /go/src/github.com/longkey1/diary
-    environment:
-      GOPATH: "/go"
-      GO111MODULE: "on"
     resource_class: small
     steps:
       - checkout
@@ -42,3 +40,6 @@ workflows:
           filters:
             branches:
               only: master
+          context:
+            - github
+
