@@ -5,20 +5,22 @@ Text file based diary command.
 ## Usage
 
 ```
-diary [global options] command [command options] [arguments...]
+Text file based diary command
 
-COMMANDS:
-   open, o          open file
-   list, l          list files
-   find, f          find files
-   save, s          save files
-   self-update, su  self update
-   help, h          Shows a list of commands or help for one comma
+Usage:
+  diary [command]
 
-GLOBAL OPTIONS:
-   --config FILE, -c FILE  Load configration from FILE (default: "/home/longkey1/.config/diary/config.toml")
-   --help, -h              show help
-   --version, -v           print the version
+Available Commands:
+  help         Help about any command
+  list         Show file list
+  open         Open file
+  self-update  Self update
+
+Flags:
+      --config string   config file (default is $HOME/.config/diary/config.toml)
+  -h, --help            help for diary
+  -t, --toggle          Help message for toggle
+  -v, --version         version for diary
 ```
 
 ## Installation
