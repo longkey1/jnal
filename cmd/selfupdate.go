@@ -16,39 +16,44 @@ limitations under the License.
 package cmd
 
 import (
-	"github.com/longkey1/diary/util"
+	"github.com/blang/semver"
+	"github.com/rhysd/go-github-selfupdate/selfupdate"
 	"log"
 
 	"github.com/spf13/cobra"
 )
 
-// listCmd represents the list command
-var listCmd = &cobra.Command{
-	Use:   "list",
-	Short: "show file list",
+// selfupdateCmd represents the selfupdate command
+var selfupdateCmd = &cobra.Command{
+	Use:   "selfupdate",
+	Short: "self update",
 	Run: func(cmd *cobra.Command, args []string) {
-		c, err := util.BuildCommand(config.ListCommand, config.BaseDirectory, "", "", "")
+		v := semver.MustParse(rootCmd.Version)
+		latest, err := selfupdate.UpdateSelf(v, "longkey1/diary")
 		if err != nil {
-			log.Fatalf("Unable to show diary post list, %v", err)
+			log.Fatalf("Unable to self update, %v", err)
 		}
 
-		err = c.Run()
-		if err != nil {
-			log.Fatalf("Unable to execute list command, %v", err)
+		if latest.Version.Equals(v) {
+			// latest version is the same as current version. It means current binary is up to date.
+			log.Println("Current binary is the latest version", rootCmd.Version)
+		} else {
+			log.Println("Successfully updated to version", latest.Version)
+			log.Println("Release note:\n", latest.ReleaseNotes)
 		}
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(listCmd)
+	rootCmd.AddCommand(selfupdateCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// listCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// selfupdateCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// listCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// selfupdateCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
