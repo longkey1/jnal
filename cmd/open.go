@@ -18,10 +18,12 @@ package cmd
 import (
 	"bytes"
 	"fmt"
+	"github.com/longkey1/diary/util"
 	"github.com/spf13/cobra"
 	"log"
 	"os"
 	"path/filepath"
+	"text/template"
 	"time"
 )
 
@@ -60,17 +62,15 @@ var openCmd = &cobra.Command{
 			}
 		}
 
-		cmd, err := c.buildCommand(cnf.OpenCommand, cnf.BaseDirectory, dayDate, dayFile, "")
+		c, err := util.BuildCommand(config.OpenCommand, config.BaseDirectory, dayDate, dayFile, "")
 		if err != nil {
-			log.Fatalf("Unable to close file, %v", err)
+			log.Fatalf("Unable to build open command, %v", err)
 		}
 
-		err = cmd.Run()
+		err = c.Run()
 		if err != nil {
-			return err
+			log.Fatalf("Unable to execute open command, %#v", err)
 		}
-
-		return nil
 	},
 }
 
