@@ -25,7 +25,7 @@ import (
 // listCmd represents the list command
 var listCmd = &cobra.Command{
 	Use:   "list",
-	Short: "show file list",
+	Short: "Show file list",
 	Run: func(cmd *cobra.Command, args []string) {
 		c, err := util.BuildCommand(config.ListCommand, config.BaseDirectory, "", "", "")
 		if err != nil {

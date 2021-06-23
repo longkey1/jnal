@@ -32,7 +32,7 @@ var Yesterday bool
 // openCmd represents the open command
 var openCmd = &cobra.Command{
 	Use:   "open",
-	Short: "open file",
+	Short: "Open file",
 	Run: func(cmd *cobra.Command, args []string) {
 		before := 0
 		if Yesterday {
