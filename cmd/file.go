@@ -21,59 +21,32 @@ import (
 	"github.com/spf13/cobra"
 	"log"
 	"os"
-	"path/filepath"
 	"time"
 )
 
-var openYesterday bool
+var fileYesterday bool
 
 // openCmd represents the open command
-var openCmd = &cobra.Command{
-	Use:   "open",
-	Short: "Open file",
+var fileCmd = &cobra.Command{
+	Use:   "file",
+	Short: "Show file path",
 	Run: func(cmd *cobra.Command, args []string) {
 		before := 0
-		if openYesterday {
+		if fileYesterday {
 			before = -1
 		}
 		targetDay := time.Now().AddDate(0, 0, before)
 		dayFile := util.BuildTargetDayFileName(config.BaseDirectory, config.FileNameFormat, targetDay)
-		dayDir := filepath.Dir(dayFile)
-		dayDate := targetDay.Format(config.DateFormat)
-		if _, err := os.Stat(dayDir); os.IsNotExist(err) {
-			if err = os.MkdirAll(dayDir, 0755); err != nil {
-				log.Fatalf("Unable to make directory, %v", err)
-			}
-		}
 		if _, err := os.Stat(dayFile); os.IsNotExist(err) {
-			file, err := os.OpenFile(dayFile, os.O_WRONLY|os.O_CREATE, 0644)
-			if err != nil {
-				log.Fatalf("Unable to open file, %v", err)
-			}
-			_, err = fmt.Fprintln(file, util.BuildTargetDayFileContent(config.FileTemplate, dayDate))
-			if err != nil {
-				log.Fatalf("Unable to build file content, %v", err)
-			}
-			err = file.Close()
-			if err != nil {
-				log.Fatalf("Unable to close file, %v", err)
-			}
+			log.Fatalf("Not found %s file, %v", dayFile, err)
 		}
 
-		c, err := util.BuildCommand(config.OpenCommand, config.BaseDirectory, dayDate, dayFile, "")
-		if err != nil {
-			log.Fatalf("Unable to build open command, %v", err)
-		}
-
-		err = c.Run()
-		if err != nil {
-			log.Fatalf("Unable to execute open command, %#v", err)
-		}
+		fmt.Println(dayFile)
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(openCmd)
+	rootCmd.AddCommand(fileCmd)
 
 	// Here you will define your flags and configuration settings.
 
@@ -84,5 +57,5 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// openCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	openCmd.Flags().BoolVarP(&openYesterday, "yesterday", "y", false, "yesterday")
+	fileCmd.Flags().BoolVarP(&fileYesterday, "yesterday", "y", false, "yesterday")
 }
