@@ -39,8 +39,8 @@ type Config struct {
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Version: "0.9.0",
-	Use:     "diary",
-	Short:   "Text file based diary command",
+	Use:     "jnal",
+	Short:   "Text file based journal command",
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
@@ -59,7 +59,7 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/diary/config.toml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/jnal/config.toml)")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
@@ -77,7 +77,7 @@ func initConfig() {
 		cobra.CheckErr(err)
 
 		// Search config in home directory with name ".config/diary" (without extension).
-		viper.AddConfigPath(home + "/.config/diary")
+		viper.AddConfigPath(home + "/.config/jnal")
 		viper.SetConfigName("config")
 		viper.SetConfigType("toml")
 	}
