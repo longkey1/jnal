@@ -21,10 +21,10 @@ jobs:
       - name: Set up golang
         uses: actions/setup-go@v2
         with:
-          go-version: '1.16.6'
+          go-version: '1.18.3'
 
-      - name: Build diary
-        run: go build -o ./bin/diary
+      - name: Build jnal
+        run: go build -o ./bin/jnal
 
       - name: Install gox
         run: go install github.com/mitchellh/gox@latest
@@ -55,7 +55,7 @@ jobs:
       - name: Set up golang
         uses: actions/setup-go@v2
         with:
-          go-version: '1.16.6'
+          go-version: '1.18.3'
 
       - name: Install ghr
         run: go install github.com/tcnksm/ghr@latest
@@ -76,6 +76,6 @@ jobs:
         run: |
           ls ./bin
           ls ./dist
-          chmod +x ./bin/diary
-          ghr -t ${{secrets.GH_PAT}} -u longkey1 -r diary v$(./bin/diary --version | cut -d " " -f 3) ./dist
+          chmod +x ./bin/jnal
+          ghr -t ${{secrets.GH_PAT}} -u longkey1 -r jnal v$(./bin/jnal --version | cut -d " " -f 3) ./dist
 
