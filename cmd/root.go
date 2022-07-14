@@ -38,9 +38,9 @@ type Config struct {
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Version: "0.8.3",
-	Use:   "diary",
-	Short: "Text file based diary command",
+	Version: "0.9.0",
+	Use:     "diary",
+	Short:   "Text file based diary command",
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
@@ -77,7 +77,7 @@ func initConfig() {
 		cobra.CheckErr(err)
 
 		// Search config in home directory with name ".config/diary" (without extension).
-		viper.AddConfigPath(home+"/.config/diary")
+		viper.AddConfigPath(home + "/.config/diary")
 		viper.SetConfigName("config")
 		viper.SetConfigType("toml")
 	}
