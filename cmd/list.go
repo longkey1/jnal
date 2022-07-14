@@ -16,7 +16,7 @@ limitations under the License.
 package cmd
 
 import (
-	"github.com/longkey1/diary/util"
+	"github.com/longkey1/jnal/util"
 	"log"
 
 	"github.com/spf13/cobra"

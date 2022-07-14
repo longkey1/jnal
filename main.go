@@ -15,7 +15,7 @@ limitations under the License.
 */
 package main
 
-import "github.com/longkey1/diary/cmd"
+import "github.com/longkey1/jnal/cmd"
 
 func main() {
 	cmd.Execute()

@@ -5,27 +5,31 @@ Text file based journal command.
 ## Usage
 
 ```
-Text file based journal command.
+Text file based journal command
 
 Usage:
-  diary [command]
+  jnal [command]
 
 Available Commands:
-  help         Help about any command
-  list         Show file list
-  open         Open file
-  self-update  Self update
+  completion  Generate the autocompletion script for the specified shell
+  file        Show file path
+  help        Help about any command
+  list        Show file list
+  open        Open file
+  self-update self update binary file
 
 Flags:
-      --config string   config file (default is $HOME/.config/diary/config.toml)
-  -h, --help            help for diary
+      --config string   config file (default is $HOME/.config/jnal/config.toml)
+  -h, --help            help for jnal
   -t, --toggle          Help message for toggle
-  -v, --version         version for diary
+  -v, --version         version for jnal
+
+Use "jnal [command] --help" for more information about a command.
 ```
 
 ## Installation
 
-You can download binary from [release page](https://github.com/longkey1/diary/releases).
+You can download binary from [release page](https://github.com/longkey1/jnal/releases).
 
 ## Configuration
 
@@ -43,9 +47,9 @@ You can download binary from [release page](https://github.com/longkey1/diary/re
 ### Sample
 
 ```toml
-# $HOME/.config/diary/config.toml
+# $HOME/.config/jnal/config.toml
 
-base_directory = "/home/longkey1/Dropbox/Documents/Diary"
+base_directory = "/home/longkey1/Dropbox/Documents/Journal"
 date_format = "2006/01/02"
 file_name_format = "2006-01-02.md"
 file_template = "# 2006-01-02\n"

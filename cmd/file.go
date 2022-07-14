@@ -17,7 +17,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/longkey1/diary/util"
+	"github.com/longkey1/jnal/util"
 	"github.com/spf13/cobra"
 	"log"
 	"os"

@@ -29,7 +29,7 @@ var selfUpdateCmd = &cobra.Command{
 	Short: "self update binary file",
 	Run: func(cmd *cobra.Command, args []string) {
 		v := semver.MustParse(rootCmd.Version)
-		latest, err := selfupdate.UpdateSelf(v, "longkey1/diary")
+		latest, err := selfupdate.UpdateSelf(v, "longkey1/jnal")
 		if err != nil {
 			log.Fatalf("Unable to self update, %v", err)
 		}
