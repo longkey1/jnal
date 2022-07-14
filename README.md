@@ -1,11 +1,11 @@
-# diary
+# jnal
 
-Text file based diary command.
+Text file based journal command.
 
 ## Usage
 
 ```
-Text file based diary command
+Text file based journal command.
 
 Usage:
   diary [command]
