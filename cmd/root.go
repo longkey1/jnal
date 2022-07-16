@@ -25,9 +25,9 @@ import (
 
 var (
 	version = "dev"
+	cfgFile string
+	config Config
 )
-
-var cfgFile string
 
 type Config struct {
 	BaseDirectory  string `mapstructure:"base_directory"`
@@ -37,8 +37,6 @@ type Config struct {
 	OpenCommand    string `mapstructure:"open_command"`
 	ListCommand    string `mapstructure:"list_command"`
 }
-
-var config Config
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
