@@ -23,9 +23,11 @@ import (
 	"github.com/spf13/viper"
 )
 
-var cfgFile string
+var (
+	version = "dev"
+)
 
-var config Config
+var cfgFile string
 
 type Config struct {
 	BaseDirectory  string `mapstructure:"base_directory"`
@@ -36,9 +38,11 @@ type Config struct {
 	ListCommand    string `mapstructure:"list_command"`
 }
 
+var config Config
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Version: "0.9.0",
+	Version: version,
 	Use:     "jnal",
 	Short:   "Text file based journal command",
 	// Uncomment the following line if your bare application
