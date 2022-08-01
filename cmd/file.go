@@ -17,7 +17,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/longkey1/jnal/util"
+	"github.com/longkey1/jnal/jnal"
 	"github.com/spf13/cobra"
 	"log"
 	"os"
@@ -25,6 +25,7 @@ import (
 )
 
 var fileYesterday bool
+var fileCreate bool
 
 // openCmd represents the open command
 var fileCmd = &cobra.Command{
@@ -36,7 +37,10 @@ var fileCmd = &cobra.Command{
 			before = -1
 		}
 		targetDay := time.Now().AddDate(0, 0, before)
-		dayFile := util.BuildTargetDayFileName(config.BaseDirectory, config.FileNameFormat, targetDay)
+		dayFile := jnal.BuildTargetDayFileName(config.BaseDirectory, config.FileNameFormat, targetDay)
+		if fileCreate {
+			jnal.CreateFile(config, targetDay)
+		}
 		if _, err := os.Stat(dayFile); os.IsNotExist(err) {
 			log.Fatalf("Not found %s file, %v", dayFile, err)
 		}
@@ -58,4 +62,5 @@ func init() {
 	// is called directly, e.g.:
 	// openCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	fileCmd.Flags().BoolVarP(&fileYesterday, "yesterday", "y", false, "yesterday")
+	fileCmd.Flags().BoolVarP(&fileCreate, "create", "c", false, "create day file")
 }

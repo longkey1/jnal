@@ -16,6 +16,7 @@ limitations under the License.
 package cmd
 
 import (
+	"github.com/longkey1/jnal/jnal"
 	"github.com/spf13/cobra"
 	"log"
 
@@ -26,17 +27,8 @@ import (
 var (
 	version = "dev"
 	cfgFile string
-	config Config
+	config  jnal.Config
 )
-
-type Config struct {
-	BaseDirectory  string `mapstructure:"base_directory"`
-	DateFormat     string `mapstructure:"date_format"`
-	FileNameFormat string `mapstructure:"file_name_format"`
-	FileTemplate   string `mapstructure:"file_template"`
-	OpenCommand    string `mapstructure:"open_command"`
-	ListCommand    string `mapstructure:"list_command"`
-}
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{

@@ -16,7 +16,7 @@ limitations under the License.
 package cmd
 
 import (
-	"github.com/longkey1/jnal/util"
+	"github.com/longkey1/jnal/jnal"
 	"log"
 
 	"github.com/spf13/cobra"
@@ -27,7 +27,7 @@ var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "Show file list",
 	Run: func(cmd *cobra.Command, args []string) {
-		c, err := util.BuildCommand(config.ListCommand, config.BaseDirectory, "", "", "")
+		c, err := jnal.BuildCommand(config.ListCommand, config.BaseDirectory, "", "", "")
 		if err != nil {
 			log.Fatalf("Unable to show diary post list, %v", err)
 		}

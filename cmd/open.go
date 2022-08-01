@@ -16,18 +16,16 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
-	"github.com/longkey1/jnal/util"
+	"github.com/longkey1/jnal/jnal"
 	"github.com/spf13/cobra"
 	"log"
 	"os"
-	"path/filepath"
 	"time"
 )
 
 var openYesterday bool
+var openNoCreate bool
 
-// openCmd represents the open command
 var openCmd = &cobra.Command{
 	Use:   "open",
 	Short: "Open file",
@@ -37,30 +35,16 @@ var openCmd = &cobra.Command{
 			before = -1
 		}
 		targetDay := time.Now().AddDate(0, 0, before)
-		dayFile := util.BuildTargetDayFileName(config.BaseDirectory, config.FileNameFormat, targetDay)
-		dayDir := filepath.Dir(dayFile)
-		dayDate := targetDay.Format(config.DateFormat)
-		if _, err := os.Stat(dayDir); os.IsNotExist(err) {
-			if err = os.MkdirAll(dayDir, 0755); err != nil {
-				log.Fatalf("Unable to make directory, %v", err)
+		dayFile := jnal.BuildTargetDayFileName(config.BaseDirectory, config.FileNameFormat, targetDay)
+		if openNoCreate {
+			if _, err := os.Stat(dayFile); os.IsNotExist(err) {
+				log.Fatalf("Not found %s file, %v", dayFile, err)
 			}
 		}
-		if _, err := os.Stat(dayFile); os.IsNotExist(err) {
-			file, err := os.OpenFile(dayFile, os.O_WRONLY|os.O_CREATE, 0644)
-			if err != nil {
-				log.Fatalf("Unable to open file, %v", err)
-			}
-			_, err = fmt.Fprintln(file, util.BuildTargetDayFileContent(config.FileTemplate, dayDate))
-			if err != nil {
-				log.Fatalf("Unable to build file content, %v", err)
-			}
-			err = file.Close()
-			if err != nil {
-				log.Fatalf("Unable to close file, %v", err)
-			}
-		}
+		jnal.CreateFile(config, targetDay)
 
-		c, err := util.BuildCommand(config.OpenCommand, config.BaseDirectory, dayDate, dayFile, "")
+		dayDate := targetDay.Format(config.DateFormat)
+		c, err := jnal.BuildCommand(config.OpenCommand, config.BaseDirectory, dayDate, dayFile, "")
 		if err != nil {
 			log.Fatalf("Unable to build open command, %v", err)
 		}
@@ -85,4 +69,5 @@ func init() {
 	// is called directly, e.g.:
 	// openCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	openCmd.Flags().BoolVarP(&openYesterday, "yesterday", "y", false, "yesterday")
+	openCmd.Flags().BoolVarP(&openNoCreate, "no-create", "", false, "not create day file")
 }
