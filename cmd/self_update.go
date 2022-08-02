@@ -18,9 +18,9 @@ package cmd
 import (
 	"github.com/blang/semver"
 	"github.com/rhysd/go-github-selfupdate/selfupdate"
-	"log"
-
 	"github.com/spf13/cobra"
+	"log"
+	"strings"
 )
 
 // selfUpdateCmd represents the selfUpdate command
@@ -28,7 +28,7 @@ var selfUpdateCmd = &cobra.Command{
 	Use:   "self-update",
 	Short: "self update binary file",
 	Run: func(cmd *cobra.Command, args []string) {
-		v := semver.MustParse(version)
+		v := semver.MustParse(strings.TrimLeft(version, "v"))
 		latest, err := selfupdate.UpdateSelf(v, "longkey1/jnal")
 		if err != nil {
 			log.Fatalf("Unable to self update, %v", err)

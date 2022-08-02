@@ -17,11 +17,10 @@ package cmd
 
 import (
 	"github.com/longkey1/jnal/jnal"
-	"github.com/spf13/cobra"
-	"log"
-
 	homedir "github.com/mitchellh/go-homedir"
+	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"log"
 )
 
 var (

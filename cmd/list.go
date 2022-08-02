@@ -17,9 +17,8 @@ package cmd
 
 import (
 	"github.com/longkey1/jnal/jnal"
-	"log"
-
 	"github.com/spf13/cobra"
+	"log"
 )
 
 // listCmd represents the list command
