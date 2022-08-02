@@ -11,10 +11,18 @@ import (
 	"time"
 )
 
-func CreateFile(config Config, targetDay time.Time) {
-	dayFile := BuildTargetDayFileName(config.BaseDirectory, config.FileNameFormat, targetDay)
+type Jnal struct {
+	cnf Config
+}
+
+func NewJnal(cnf Config) Jnal {
+	return Jnal{cnf}
+}
+
+func (j Jnal) CreateFile(day time.Time) {
+	dayFile := j.BuildTargetDayFileName(day)
 	dayDir := filepath.Dir(dayFile)
-	dayDate := targetDay.Format(config.DateFormat)
+	dayDate := day.Format(j.cnf.DateFormat)
 	if _, err := os.Stat(dayDir); os.IsNotExist(err) {
 		if err = os.MkdirAll(dayDir, 0755); err != nil {
 			log.Fatalf("Unable to make directory, %v", err)
@@ -25,7 +33,7 @@ func CreateFile(config Config, targetDay time.Time) {
 		if err != nil {
 			log.Fatalf("Unable to open file, %v", err)
 		}
-		_, err = fmt.Fprintln(file, BuildTargetDayFileContent(config.FileTemplate, dayDate))
+		_, err = fmt.Fprintln(file, j.buildTargetDayFileContent(j.cnf.FileTemplate, dayDate))
 		if err != nil {
 			log.Fatalf("Unable to build file content, %v", err)
 		}
@@ -36,7 +44,21 @@ func CreateFile(config Config, targetDay time.Time) {
 	}
 }
 
-func BuildCommand(tpl string, dir string, date string, file string, pattern string) (*exec.Cmd, error) {
+func (j Jnal) BuildOpenCommand(day time.Time) (*exec.Cmd, error) {
+	date := day.Format(j.cnf.DateFormat)
+	file := j.BuildTargetDayFileName(day)
+	return j.buildCommand(j.cnf.OpenCommand, j.cnf.BaseDirectory, date, file, "")
+}
+
+func (j Jnal) BuildListCommand() (*exec.Cmd, error) {
+	return j.buildCommand(j.cnf.ListCommand, j.cnf.BaseDirectory, "", "", "")
+}
+
+func (j Jnal) BuildTargetDayFileName(day time.Time) string {
+	return fmt.Sprintf("%s/%s", j.cnf.BaseDirectory, day.Format(j.cnf.DateFormat))
+}
+
+func (j Jnal) buildCommand(tpl string, dir string, date string, file string, pattern string) (*exec.Cmd, error) {
 	t := template.Must(template.New("").Parse(tpl))
 	buf := new(bytes.Buffer)
 	err := t.Execute(buf, map[string]interface{}{
@@ -57,7 +79,7 @@ func BuildCommand(tpl string, dir string, date string, file string, pattern stri
 	return cmd, nil
 }
 
-func BuildTargetDayFileContent(tpl string, date string) string {
+func (j Jnal) buildTargetDayFileContent(tpl string, date string) string {
 	t := template.Must(template.New("").Parse(tpl))
 	buf := new(bytes.Buffer)
 	err := t.Execute(buf, map[string]interface{}{
@@ -68,8 +90,4 @@ func BuildTargetDayFileContent(tpl string, date string) string {
 	}
 
 	return buf.String()
-}
-
-func BuildTargetDayFileName(dir string, file string, day time.Time) string {
-	return fmt.Sprintf("%s/%s", dir, day.Format(file))
 }
