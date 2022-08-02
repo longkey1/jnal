@@ -30,21 +30,22 @@ var openCmd = &cobra.Command{
 	Use:   "open",
 	Short: "Open file",
 	Run: func(cmd *cobra.Command, args []string) {
+		j := jnal.NewJnal(config)
+
 		before := 0
 		if openYesterday {
 			before = -1
 		}
 		targetDay := time.Now().AddDate(0, 0, before)
-		dayFile := jnal.BuildTargetDayFileName(config.BaseDirectory, config.FileNameFormat, targetDay)
+		dayFile := j.BuildTargetDayFileName(targetDay)
 		if openNoCreate {
 			if _, err := os.Stat(dayFile); os.IsNotExist(err) {
 				log.Fatalf("Not found %s file, %v", dayFile, err)
 			}
 		}
-		jnal.CreateFile(config, targetDay)
+		j.CreateFile(targetDay)
 
-		dayDate := targetDay.Format(config.DateFormat)
-		c, err := jnal.BuildCommand(config.OpenCommand, config.BaseDirectory, dayDate, dayFile, "")
+		c, err := j.BuildOpenCommand(targetDay)
 		if err != nil {
 			log.Fatalf("Unable to build open command, %v", err)
 		}

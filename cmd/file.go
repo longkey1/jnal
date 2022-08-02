@@ -32,14 +32,16 @@ var fileCmd = &cobra.Command{
 	Use:   "file",
 	Short: "Show file path",
 	Run: func(cmd *cobra.Command, args []string) {
+		j := jnal.NewJnal(config)
+
 		before := 0
 		if fileYesterday {
 			before = -1
 		}
 		targetDay := time.Now().AddDate(0, 0, before)
-		dayFile := jnal.BuildTargetDayFileName(config.BaseDirectory, config.FileNameFormat, targetDay)
+		dayFile := j.BuildTargetDayFileName(targetDay)
 		if fileCreate {
-			jnal.CreateFile(config, targetDay)
+			j.CreateFile(targetDay)
 		}
 		if _, err := os.Stat(dayFile); os.IsNotExist(err) {
 			log.Fatalf("Not found %s file, %v", dayFile, err)
