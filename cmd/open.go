@@ -37,13 +37,14 @@ var openCmd = &cobra.Command{
 			before = -1
 		}
 		targetDay := time.Now().AddDate(0, 0, before)
-		dayFile := j.BuildTargetDayFileName(targetDay)
-		if openNoCreate {
-			if _, err := os.Stat(dayFile); os.IsNotExist(err) {
-				log.Fatalf("Not found %s file, %v", dayFile, err)
-			}
+
+		dayFile := j.GetFileName(targetDay)
+		if openNoCreate == false {
+			j.CreateFile(targetDay)
 		}
-		j.CreateFile(targetDay)
+		if _, err := os.Stat(dayFile); os.IsNotExist(err) {
+			log.Fatalf("Not found %s file, %v", dayFile, err)
+		}
 
 		c, err := j.BuildOpenCommand(targetDay)
 		if err != nil {

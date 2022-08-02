@@ -27,6 +27,7 @@ var listCmd = &cobra.Command{
 	Short: "Show file list",
 	Run: func(cmd *cobra.Command, args []string) {
 		j := jnal.NewJnal(config)
+
 		c, err := j.BuildListCommand()
 		if err != nil {
 			log.Fatalf("Unable to show diary post list, %v", err)

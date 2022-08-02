@@ -39,7 +39,8 @@ var fileCmd = &cobra.Command{
 			before = -1
 		}
 		targetDay := time.Now().AddDate(0, 0, before)
-		dayFile := j.BuildTargetDayFileName(targetDay)
+
+		dayFile := j.GetFileName(targetDay)
 		if fileCreate {
 			j.CreateFile(targetDay)
 		}
