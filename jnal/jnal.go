@@ -48,11 +48,11 @@ func (j Jnal) CreateDayFile(day time.Time) string {
 func (j Jnal) BuildOpenCommand(day time.Time) (*exec.Cmd, error) {
 	date := day.Format(j.cnf.DateFormat)
 	file := j.GetDayFilePath(day)
-	return j.buildCommand(j.cnf.OpenCommand, j.cnf.BaseDirectory, date, file, "")
+	return j.buildCommand(j.cnf.OpenCommand, j.cnf.BaseDirectory, date, file)
 }
 
 func (j Jnal) BuildListCommand() (*exec.Cmd, error) {
-	return j.buildCommand(j.cnf.ListCommand, j.cnf.BaseDirectory, "", "", "")
+	return j.buildCommand(j.cnf.ListCommand, j.cnf.BaseDirectory, "", "")
 }
 
 func (j Jnal) GetBaseDirPath() string {
@@ -63,14 +63,13 @@ func (j Jnal) GetDayFilePath(day time.Time) string {
 	return fmt.Sprintf("%s/%s", j.cnf.BaseDirectory, day.Format(j.cnf.FileNameFormat))
 }
 
-func (j Jnal) buildCommand(tpl string, dir string, date string, file string, pattern string) (*exec.Cmd, error) {
+func (j Jnal) buildCommand(tpl string, dir string, date string, file string) (*exec.Cmd, error) {
 	t := template.Must(template.New("").Parse(tpl))
 	buf := new(bytes.Buffer)
 	err := t.Execute(buf, map[string]interface{}{
 		"BaseDir": dir,
 		"Date":    date,
 		"File":    file,
-		"Pattern": pattern,
 	})
 	if err != nil {
 		return nil, err
