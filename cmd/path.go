@@ -24,36 +24,44 @@ import (
 	"time"
 )
 
-var fileYesterday bool
-var fileCreate bool
+var pathCheck bool
+var pathDay string
+var pathType string
 
-// openCmd represents the open command
-var fileCmd = &cobra.Command{
-	Use:   "file",
-	Short: "Show file path",
+const (
+	FileType = "file"
+	BaseType = "base"
+)
+
+// pathCmd represents the path command
+var pathCmd = &cobra.Command{
+	Use:   "path",
+	Short: "Show path",
 	Run: func(cmd *cobra.Command, args []string) {
 		j := jnal.NewJnal(config)
 
-		before := 0
-		if fileYesterday {
-			before = -1
-		}
-		targetDay := time.Now().AddDate(0, 0, before)
-
-		dayFile := j.GetFileName(targetDay)
-		if fileCreate {
-			j.CreateFile(targetDay)
-		}
-		if _, err := os.Stat(dayFile); os.IsNotExist(err) {
-			log.Fatalf("Not found %s file, %v", dayFile, err)
+		targetDay, err := time.Parse("2006-01-02", pathDay)
+		if err != nil {
+			log.Fatalf("target day format error %s, %v", pathDay, err)
 		}
 
-		fmt.Println(dayFile)
+		targetPath := j.GetDayFilePath(targetDay)
+		if pathType == BaseType {
+			targetPath = j.GetBaseDirPath()
+		}
+
+		if pathCheck {
+			if _, err := os.Stat(targetPath); os.IsNotExist(err) {
+				log.Fatalf("Not found %s, %v", targetPath, err)
+			}
+		}
+
+		fmt.Println(targetPath)
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(fileCmd)
+	rootCmd.AddCommand(pathCmd)
 
 	// Here you will define your flags and configuration settings.
 
@@ -64,6 +72,7 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// openCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	fileCmd.Flags().BoolVarP(&fileYesterday, "yesterday", "y", false, "yesterday")
-	fileCmd.Flags().BoolVarP(&fileCreate, "create", "c", false, "create day file")
+	pathCmd.Flags().BoolVarP(&pathCheck, "check", "c", false, "directory or file exist check")
+	pathCmd.Flags().StringVarP(&pathDay, "day", "d", time.Now().Format("2006-01-02"), "target day (ISO 8601)")
+	pathCmd.Flags().StringVarP(&pathType, "type", "t", FileType, fmt.Sprintf("type fmt.F[%s, %s]", FileType, BaseType))
 }
