@@ -16,7 +16,6 @@ Available Commands:
   list        Show file list
   open        Open file
   path        Show path
-  self-update self update binary file
 
 Flags:
       --config string   config file (default is $HOME/.config/jnal/config.toml)
