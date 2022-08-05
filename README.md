@@ -12,10 +12,10 @@ Usage:
 
 Available Commands:
   completion  Generate the autocompletion script for the specified shell
-  file        Show file path
   help        Help about any command
   list        Show file list
   open        Open file
+  path        Show path
   self-update self update binary file
 
 Flags:
@@ -42,7 +42,6 @@ You can download binary from [release page](https://github.com/longkey1/jnal/rel
 **command**
 - `{{ .BaseDir }}`
 - `{{ .File }}`
-- `{{ .Pattern }}`
 
 ### Sample
 
@@ -55,8 +54,6 @@ file_name_format = "2006-01-02.md"
 file_template = "# 2006-01-02\n"
 open_command = "vim {{ .File }}"
 list_command = "ranger {{ .BaseDir }}"
-find_command = "selected=$(pt \"{{ .Pattern }}\" \"{{ .BaseDir }}\" | fzf --query \"$LBUFFER\" | awk -F : '{print \"-c \" $2 \" \" $1}'); [[ -n ${selected} ]] && echo $selected || true"
-save_command = "git commit -m \"Auto commit by diary command\""
 ```
 
 `file_name` or `file_template` are using [golang's time format](https://golang.org/src/time/format.go).
