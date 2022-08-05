@@ -23,8 +23,8 @@ import (
 	"time"
 )
 
-var openYesterday bool
-var openNoCreate bool
+var openDay string
+var openWithNoCreate bool
 
 var openCmd = &cobra.Command{
 	Use:   "open",
@@ -32,15 +32,14 @@ var openCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		j := jnal.NewJnal(config)
 
-		before := 0
-		if openYesterday {
-			before = -1
+		targetDay, err := time.Parse("2006-01-02", openDay)
+		if err != nil {
+			log.Fatalf("target day format error %s, %v", pathDay, err)
 		}
-		targetDay := time.Now().AddDate(0, 0, before)
 
-		dayFile := j.GetFileName(targetDay)
-		if openNoCreate == false {
-			j.CreateFile(targetDay)
+		dayFile := j.GetDayFilePath(targetDay)
+		if openWithNoCreate == false {
+			dayFile = j.CreateDayFile(targetDay)
 		}
 		if _, err := os.Stat(dayFile); os.IsNotExist(err) {
 			log.Fatalf("Not found %s file, %v", dayFile, err)
@@ -70,6 +69,6 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// openCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	openCmd.Flags().BoolVarP(&openYesterday, "yesterday", "y", false, "yesterday")
-	openCmd.Flags().BoolVarP(&openNoCreate, "no-create", "", false, "not create day file")
+	openCmd.Flags().StringVarP(&openDay, "day", "d", time.Now().Format("2006-01-02"), "target day (ISO 8601)")
+	openCmd.Flags().BoolVarP(&openWithNoCreate, "with-no-create", "", false, "not with creating day file")
 }
