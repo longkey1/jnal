@@ -21,7 +21,7 @@ func NewJnal(cnf Config) Jnal {
 
 func (j Jnal) CreateDayFile(day time.Time) string {
 	dayFile := j.GetDayFilePath(day)
-	if _, err := os.Stat(filepath.Dir(dayFile)); err == nil {
+	if _, err := os.Stat(dayFile); err == nil {
 		return dayFile
 	}
 	if _, err := os.Stat(filepath.Dir(dayFile)); os.IsNotExist(err) {
