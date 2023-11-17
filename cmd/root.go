@@ -16,6 +16,7 @@ limitations under the License.
 package cmd
 
 import (
+	"fmt"
 	"github.com/longkey1/jnal/jnal"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
@@ -24,14 +25,12 @@ import (
 )
 
 var (
-	version = "dev"
 	cfgFile string
 	config  jnal.Config
 )
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Version: version,
 	Use:     "jnal",
 	Short:   "Text file based journal command",
 	// Uncomment the following line if your bare application
@@ -85,3 +84,8 @@ func initConfig() {
 		log.Fatalf("Unable to decode into struct, %v", err)
 	}
 }
+
+func SetVersionInfo(version, commit, date string) {
+	rootCmd.Version = fmt.Sprintf("%s (Built on %s from Git SHA %s)", version, date, commit)
+}
+
