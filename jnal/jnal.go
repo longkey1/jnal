@@ -70,6 +70,7 @@ func (j Jnal) buildCommand(tpl string, dir string, date string, file string) (*e
 		"BaseDir": dir,
 		"Date":    date,
 		"File":    file,
+		"ENV":     getEnvMap(),
 	})
 	if err != nil {
 		return nil, err
@@ -82,11 +83,25 @@ func (j Jnal) buildCommand(tpl string, dir string, date string, file string) (*e
 	return cmd, nil
 }
 
+func getEnvMap() map[string]string {
+	envMap := make(map[string]string)
+	for _, env := range os.Environ() {
+		for i := 0; i < len(env); i++ {
+			if env[i] == '=' {
+				envMap[env[:i]] = env[i+1:]
+				break
+			}
+		}
+	}
+	return envMap
+}
+
 func (j Jnal) buildTargetDayFileContent(day time.Time) string {
 	t := template.Must(template.New("").Parse(j.cnf.FileTemplate))
 	buf := new(bytes.Buffer)
 	err := t.Execute(buf, map[string]interface{}{
 		"Date": day.Format(j.cnf.DateFormat),
+		"ENV":  getEnvMap(),
 	})
 	if err != nil {
 		panic(err)

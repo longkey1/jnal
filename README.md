@@ -37,10 +37,13 @@ You can download binary from [release page](https://github.com/longkey1/jnal/rel
 **file template**
 
 - `{{ .Date }}`
+- `{{ .ENV.<NAME> }}` - Environment variable (e.g., `{{ .ENV.HOME }}`, `{{ .ENV.USER }}`)
 
 **command**
 - `{{ .BaseDir }}`
+- `{{ .Date }}`
 - `{{ .File }}`
+- `{{ .ENV.<NAME> }}` - Environment variable (e.g., `{{ .ENV.HOME }}`, `{{ .ENV.USER }}`)
 
 ### Sample
 
