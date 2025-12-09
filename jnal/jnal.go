@@ -70,7 +70,7 @@ func (j Jnal) buildCommand(tpl string, dir string, date string, file string) (*e
 		"BaseDir": dir,
 		"Date":    date,
 		"File":    file,
-		"ENV":     getEnvMap(),
+		"Env":     getEnvMap(),
 	})
 	if err != nil {
 		return nil, err
@@ -101,7 +101,7 @@ func (j Jnal) buildTargetDayFileContent(day time.Time) string {
 	buf := new(bytes.Buffer)
 	err := t.Execute(buf, map[string]interface{}{
 		"Date": day.Format(j.cnf.DateFormat),
-		"ENV":  getEnvMap(),
+		"Env":  getEnvMap(),
 	})
 	if err != nil {
 		panic(err)
