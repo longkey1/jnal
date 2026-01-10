@@ -21,7 +21,7 @@ open_command = "vim {{ .File }}"
 
 [serve]
 port = 8080
-group = "month"
+group = "none"
 sort = "desc"
 `
 
