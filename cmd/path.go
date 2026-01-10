@@ -1,78 +1,59 @@
-/*
-Copyright © 2021 NAME HERE <EMAIL ADDRESS>
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 package cmd
 
 import (
 	"fmt"
-	"github.com/longkey1/jnal/jnal"
-	"github.com/spf13/cobra"
-	"log"
 	"os"
-	"time"
+
+	"github.com/longkey1/jnal/internal/dateutil"
+	"github.com/spf13/cobra"
 )
 
-var pathCheck bool
-var pathDay string
-var pathType string
+var (
+	pathCheck bool
+	pathDate  string
+	pathType  string
+)
 
 const (
-	FileType = "file"
-	BaseType = "base"
+	PathTypeFile = "file"
+	PathTypeBase = "base"
 )
 
-// pathCmd represents the path command
 var pathCmd = &cobra.Command{
 	Use:   "path",
-	Short: "Show path",
-	Run: func(cmd *cobra.Command, args []string) {
-		j := jnal.NewJnal(config)
-
-		targetDay, err := time.Parse("2006-01-02", pathDay)
+	Short: "Show file or directory path",
+	Long:  `Show the path of a journal entry file or the base directory.`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		targetDate, err := dateutil.Parse(pathDate)
 		if err != nil {
-			log.Fatalf("target day format error %s, %v", pathDay, err)
+			return fmt.Errorf("invalid date %q: %w", pathDate, err)
 		}
 
-		targetPath := j.GetDayFilePath(targetDay)
-		if pathType == BaseType {
-			targetPath = j.GetBaseDirPath()
+		var targetPath string
+		switch pathType {
+		case PathTypeBase:
+			targetPath = jnl.GetBaseDir()
+		case PathTypeFile:
+			targetPath = jnl.GetEntryPath(targetDate)
+		default:
+			return fmt.Errorf("invalid type %q: must be %q or %q", pathType, PathTypeFile, PathTypeBase)
 		}
 
 		if pathCheck {
 			if _, err := os.Stat(targetPath); os.IsNotExist(err) {
-				log.Fatalf("Not found %s, %v", targetPath, err)
+				return fmt.Errorf("path does not exist: %s", targetPath)
 			}
 		}
 
 		fmt.Println(targetPath)
+		return nil
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(pathCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// openCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// openCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-	pathCmd.Flags().BoolVarP(&pathCheck, "check", "c", false, "directory or file exist check")
-	pathCmd.Flags().StringVarP(&pathDay, "day", "d", time.Now().Format("2006-01-02"), "target day (ISO 8601)")
-	pathCmd.Flags().StringVarP(&pathType, "type", "t", FileType, fmt.Sprintf("type fmt.F[%s, %s]", FileType, BaseType))
+	pathCmd.Flags().BoolVarP(&pathCheck, "check", "c", false, "Check if the path exists")
+	pathCmd.Flags().StringVarP(&pathDate, "date", "d", dateutil.Format(dateutil.Today()), "Target date (format: yyyy-mm-dd)")
+	pathCmd.Flags().StringVarP(&pathType, "type", "t", PathTypeFile, fmt.Sprintf("Path type [%s, %s]", PathTypeFile, PathTypeBase))
 }

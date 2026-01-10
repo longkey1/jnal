@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .Title }}</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fafafa;
+            color: #333;
+        }
+        h1 {
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+        }
+        .meta {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 20px;
+        }
+        .group {
+            margin-bottom: 30px;
+        }
+        .group-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 10px;
+            padding-left: 5px;
+            border-left: 4px solid #007acc;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        li:last-child {
+            border-bottom: none;
+        }
+        a {
+            color: #007acc;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .date {
+            font-family: monospace;
+            color: #666;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>{{ .Title }}</h1>
+    <div class="meta">
+        Group: {{ .Group }} | Sort: {{ .Sort }} | Updated: {{ .Updated.Format "2006-01-02 15:04:05" }}
+    </div>
+
+    {{ range .Groups }}
+    <div class="group">
+        {{ if ne $.Group "none" }}
+        <div class="group-title">{{ .Name }}</div>
+        {{ end }}
+        <ul>
+            {{ range .Entries }}
+            <li>
+                <span class="date">{{ .Date.Format "2006-01-02" }}</span>
+                <a href="/entry/{{ .Date.Format "2006-01-02" }}.html">{{ .Date.Format "2006-01-02" }}</a>
+            </li>
+            {{ end }}
+        </ul>
+    </div>
+    {{ end }}
+
+    {{ if eq (len .Groups) 0 }}
+    <p>No journal entries found.</p>
+    {{ end }}
+</body>
+</html>

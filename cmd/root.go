@@ -1,91 +1,62 @@
-/*
-Copyright © 2021 NAME HERE <EMAIL ADDRESS>
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 package cmd
 
 import (
 	"fmt"
-	"github.com/longkey1/jnal/jnal"
-	homedir "github.com/mitchellh/go-homedir"
+	"os"
+
+	"github.com/longkey1/jnal/internal/config"
+	"github.com/longkey1/jnal/internal/journal"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-	"log"
 )
 
 var (
 	cfgFile string
-	config  jnal.Config
+	cfg     *config.Config
+	jnl     *journal.Journal
 )
 
-// rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:     "jnal",
-	Short:   "Text file based journal command",
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+	Use:   "jnal",
+	Short: "Text file based journal command",
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		// Skip config loading for commands that don't need it
+		if cmd.Name() == "init" || cmd.Name() == "help" || cmd.Name() == "completion" {
+			return nil
+		}
+
+		var err error
+		cfg, err = config.Load(cfgFile)
+		if err != nil {
+			return fmt.Errorf("loading config: %w", err)
+		}
+
+		jnl = journal.New(cfg)
+		return nil
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	cobra.CheckErr(rootCmd.Execute())
+	if err := rootCmd.Execute(); err != nil {
+		os.Exit(1)
+	}
 }
 
 func init() {
-	cobra.OnInitialize(initConfig)
-
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/jnal/config.toml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-// initConfig reads in config file and ENV variables if set.
-func initConfig() {
-	if cfgFile != "" {
-		// Use config file from the flag.
-		viper.SetConfigFile(cfgFile)
-	} else {
-		// Find home directory.
-		home, err := homedir.Dir()
-		cobra.CheckErr(err)
-
-		// Search config in home directory with name ".config/diary" (without extension).
-		viper.AddConfigPath(home + "/.config/jnal")
-		viper.SetConfigName("config")
-		viper.SetConfigType("toml")
-	}
-
-	viper.AutomaticEnv() // read in environment variables that match
-
-	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err != nil {
-		log.Fatalf("Unable to read config file, %v", err)
-	}
-	if err := viper.Unmarshal(&config); err != nil {
-		log.Fatalf("Unable to decode into struct, %v", err)
-	}
-}
-
+// SetVersionInfo sets version information for the root command
 func SetVersionInfo(version, commit, date string) {
 	rootCmd.Version = fmt.Sprintf("%s (Built on %s from Git SHA %s)", version, date, commit)
 }
 
+// GetConfig returns the loaded configuration
+func GetConfig() *config.Config {
+	return cfg
+}
+
+// GetJournal returns the journal instance
+func GetJournal() *journal.Journal {
+	return jnl
+}
