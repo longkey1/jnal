@@ -17,11 +17,11 @@ Available Commands:
   new         Create and open a journal entry
   path        Show file or directory path
   serve       Start a local preview server
+  version     Show version information
 
 Flags:
       --config string   config file (default is $HOME/.config/jnal/config.toml)
   -h, --help            help for jnal
-  -v, --version         version for jnal
 
 Use "jnal [command] --help" for more information about a command.
 ```

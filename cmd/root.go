@@ -20,7 +20,7 @@ var rootCmd = &cobra.Command{
 	Short: "Text file based journal command",
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		// Skip config loading for commands that don't need it
-		if cmd.Name() == "init" || cmd.Name() == "help" || cmd.Name() == "completion" {
+		if cmd.Name() == "init" || cmd.Name() == "help" || cmd.Name() == "completion" || cmd.Name() == "version" {
 			return nil
 		}
 
@@ -44,11 +44,6 @@ func Execute() {
 
 func init() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/jnal/config.toml)")
-}
-
-// SetVersionInfo sets version information for the root command
-func SetVersionInfo(version, commit, date string) {
-	rootCmd.Version = fmt.Sprintf("%s (Built on %s from Git SHA %s)", version, date, commit)
 }
 
 // GetConfig returns the loaded configuration
