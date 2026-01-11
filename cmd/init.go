@@ -13,15 +13,17 @@ var initForce bool
 
 const defaultConfigTemplate = `# jnal configuration file
 
+[general]
 base_directory = "%s"
 date_format = "2006-01-02"
 path_format = "2006-01-02.md"
 file_template = "# {{ .Date }}\n"
+title = "Journal"
+sort = "desc"
+# css = "https://cdn.jsdelivr.net/npm/water.css@2/out/water.css"
 
 [serve]
 port = 8080
-sort = "desc"
-# css = "https://cdn.jsdelivr.net/npm/water.css@2/out/water.css"
 `
 
 var initCmd = &cobra.Command{

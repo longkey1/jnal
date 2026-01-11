@@ -24,20 +24,19 @@ var serveCmd = &cobra.Command{
 The server watches for file changes and automatically reloads content.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// Override config with command line flags
-		serveCfg := cfg.Serve
 		if cmd.Flags().Changed("port") {
-			serveCfg.Port = servePort
+			cfg.Serve.Port = servePort
 		}
 		if cmd.Flags().Changed("sort") {
-			serveCfg.Sort = serveSort
+			cfg.General.Sort = serveSort
 		}
 
-		// Validate serve config
-		if err := serveCfg.Validate(); err != nil {
-			return fmt.Errorf("invalid serve config: %w", err)
+		// Validate config
+		if err := cfg.Validate(); err != nil {
+			return fmt.Errorf("invalid config: %w", err)
 		}
 
-		srv, err := server.New(&serveCfg, jnl, cfg.BaseDirectory)
+		srv, err := server.New(cfg, jnl, cfg.General.BaseDirectory)
 		if err != nil {
 			return fmt.Errorf("creating server: %w", err)
 		}

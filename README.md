@@ -71,7 +71,7 @@ jnal serve
 `css` can be a URL (downloaded at startup) or inline CSS:
 
 ```toml
-[serve]
+[general]
 # URL (classless CSS frameworks work great)
 css = "https://cdn.jsdelivr.net/npm/water.css@2/out/water.css"
 
@@ -92,15 +92,17 @@ nav { position: static; }
 ```toml
 # $HOME/.config/jnal/config.toml
 
+[general]
 base_directory = "/home/user/journal"
 date_format = "2006-01-02"
 path_format = "2006/2006-01-02.md"
 file_template = "# {{ .Date }}\n"
+title = "My Journal"
+sort = "desc"
+css = "https://cdn.jsdelivr.net/npm/water.css@2/out/water.css"
 
 [serve]
 port = 8080
-sort = "desc"
-css = "https://cdn.jsdelivr.net/npm/water.css@2/out/water.css"
 ```
 
 ## Commands

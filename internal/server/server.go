@@ -56,7 +56,7 @@ article blockquote { border-left: 4px solid #ddd; margin: 0; padding-left: 20px;
 
 // Server represents the journal preview server
 type Server struct {
-	cfg     *config.ServeConfig
+	cfg     *config.Config
 	journal *journal.Journal
 	baseDir string
 	css     string
@@ -68,14 +68,14 @@ type Server struct {
 }
 
 // New creates a new Server instance
-func New(cfg *config.ServeConfig, jnl *journal.Journal, baseDir string) (*Server, error) {
+func New(cfg *config.Config, jnl *journal.Journal, baseDir string) (*Server, error) {
 	tmpl, err := template.ParseFS(templatesFS, "templates/*.html")
 	if err != nil {
 		return nil, fmt.Errorf("parsing templates: %w", err)
 	}
 
 	// Load CSS
-	css, err := loadCSS(cfg.CSS)
+	css, err := loadCSS(cfg.General.CSS)
 	if err != nil {
 		return nil, fmt.Errorf("loading css: %w", err)
 	}
@@ -135,7 +135,7 @@ func (s *Server) Start(ctx context.Context) error {
 	mux.HandleFunc("/", s.handleIndex)
 
 	srv := &http.Server{
-		Addr:    fmt.Sprintf(":%d", s.cfg.Port),
+		Addr:    fmt.Sprintf(":%d", s.cfg.Serve.Port),
 		Handler: mux,
 	}
 
@@ -147,7 +147,7 @@ func (s *Server) Start(ctx context.Context) error {
 		srv.Shutdown(shutdownCtx)
 	}()
 
-	fmt.Printf("Starting server at http://localhost:%d\n", s.cfg.Port)
+	fmt.Printf("Starting server at http://localhost:%d\n", s.cfg.Serve.Port)
 	fmt.Println("Press Ctrl+C to stop")
 
 	if err := srv.ListenAndServe(); err != http.ErrServerClosed {
@@ -165,7 +165,7 @@ func (s *Server) reloadEntries() error {
 	}
 
 	// Sort entries based on configuration
-	switch s.cfg.Sort {
+	switch s.cfg.General.Sort {
 	case config.SortAsc:
 		entries.SortByDateAsc()
 	default:
@@ -256,7 +256,7 @@ func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 	templateEntries, yearNavs := convertToTemplateEntries(entries)
 
 	data := IndexData{
-		Title:    s.cfg.Title,
+		Title:    s.cfg.General.Title,
 		Entries:  templateEntries,
 		YearNavs: yearNavs,
 		CSS:      template.CSS(s.css),
@@ -329,7 +329,7 @@ type IndexData struct {
 
 // Builder generates static HTML files
 type Builder struct {
-	cfg     *config.ServeConfig
+	cfg     *config.Config
 	journal *journal.Journal
 	baseDir string
 	css     string
@@ -338,13 +338,13 @@ type Builder struct {
 }
 
 // NewBuilder creates a new Builder instance
-func NewBuilder(cfg *config.ServeConfig, jnl *journal.Journal, baseDir string) (*Builder, error) {
+func NewBuilder(cfg *config.Config, jnl *journal.Journal, baseDir string) (*Builder, error) {
 	tmpl, err := template.ParseFS(templatesFS, "templates/*.html")
 	if err != nil {
 		return nil, fmt.Errorf("parsing templates: %w", err)
 	}
 
-	css, err := loadCSS(cfg.CSS)
+	css, err := loadCSS(cfg.General.CSS)
 	if err != nil {
 		return nil, fmt.Errorf("loading css: %w", err)
 	}
@@ -373,7 +373,7 @@ func (b *Builder) Build(outputDir string) error {
 	}
 
 	// Sort entries
-	switch b.cfg.Sort {
+	switch b.cfg.General.Sort {
 	case config.SortAsc:
 		entries.SortByDateAsc()
 	default:
@@ -394,7 +394,7 @@ func (b *Builder) Build(outputDir string) error {
 
 	// Generate index.html
 	indexData := IndexData{
-		Title:    b.cfg.Title,
+		Title:    b.cfg.General.Title,
 		Entries:  templateEntries,
 		YearNavs: yearNavs,
 		CSS:      template.CSS(b.css),

@@ -13,13 +13,15 @@ func TestConfig_Validate(t *testing.T) {
 		{
 			name: "valid config",
 			config: Config{
-				BaseDirectory: "/home/user/journal",
+				General: GeneralConfig{
+					BaseDirectory: "/home/user/journal",
+				},
 			},
 			wantErr: false,
 		},
 		{
-			name: "missing base_directory",
-			config: Config{},
+			name:    "missing base_directory",
+			config:  Config{},
 			wantErr: true,
 		},
 	}
@@ -34,6 +36,39 @@ func TestConfig_Validate(t *testing.T) {
 	}
 }
 
+func TestGeneralConfig_Validate(t *testing.T) {
+	tests := []struct {
+		name    string
+		config  GeneralConfig
+		wantErr bool
+	}{
+		{
+			name:    "valid config",
+			config:  GeneralConfig{BaseDirectory: "/home/user/journal", Sort: "desc"},
+			wantErr: false,
+		},
+		{
+			name:    "missing base_directory",
+			config:  GeneralConfig{},
+			wantErr: true,
+		},
+		{
+			name:    "invalid sort",
+			config:  GeneralConfig{BaseDirectory: "/home/user/journal", Sort: "invalid"},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.config.Validate()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GeneralConfig.Validate() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
 func TestServeConfig_Validate(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -42,7 +77,7 @@ func TestServeConfig_Validate(t *testing.T) {
 	}{
 		{
 			name:    "valid config",
-			config:  ServeConfig{Port: 8080, Sort: "desc"},
+			config:  ServeConfig{Port: 8080},
 			wantErr: false,
 		},
 		{
@@ -58,11 +93,6 @@ func TestServeConfig_Validate(t *testing.T) {
 		{
 			name:    "invalid port too high",
 			config:  ServeConfig{Port: 70000},
-			wantErr: true,
-		},
-		{
-			name:    "invalid sort",
-			config:  ServeConfig{Sort: "invalid"},
 			wantErr: true,
 		},
 	}
@@ -81,13 +111,13 @@ func TestConfig_SetDefaults(t *testing.T) {
 	cfg := &Config{}
 	cfg.SetDefaults()
 
-	if cfg.DateFormat != "2006-01-02" {
-		t.Errorf("DateFormat = %v, want 2006-01-02", cfg.DateFormat)
+	if cfg.General.DateFormat != "2006-01-02" {
+		t.Errorf("General.DateFormat = %v, want 2006-01-02", cfg.General.DateFormat)
+	}
+	if cfg.General.Sort != DefaultSort {
+		t.Errorf("General.Sort = %v, want %v", cfg.General.Sort, DefaultSort)
 	}
 	if cfg.Serve.Port != DefaultPort {
 		t.Errorf("Serve.Port = %v, want %v", cfg.Serve.Port, DefaultPort)
-	}
-	if cfg.Serve.Sort != DefaultSort {
-		t.Errorf("Serve.Sort = %v, want %v", cfg.Serve.Sort, DefaultSort)
 	}
 }

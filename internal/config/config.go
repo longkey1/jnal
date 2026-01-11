@@ -25,30 +25,48 @@ const (
 
 // Config represents the application configuration
 type Config struct {
-	BaseDirectory string      `mapstructure:"base_directory"`
-	DateFormat    string      `mapstructure:"date_format"`
-	PathFormat    string      `mapstructure:"path_format"`
-	FileTemplate  string      `mapstructure:"file_template"`
-	Serve         ServeConfig `mapstructure:"serve"`
+	General GeneralConfig `mapstructure:"general"`
+	Serve   ServeConfig   `mapstructure:"serve"`
+}
+
+// GeneralConfig represents the general configuration
+type GeneralConfig struct {
+	BaseDirectory string `mapstructure:"base_directory"`
+	DateFormat    string `mapstructure:"date_format"`
+	PathFormat    string `mapstructure:"path_format"`
+	FileTemplate  string `mapstructure:"file_template"`
+	Title         string `mapstructure:"title"`
+	Sort          string `mapstructure:"sort"`
+	CSS           string `mapstructure:"css"`
 }
 
 // ServeConfig represents the serve command configuration
 type ServeConfig struct {
-	Port  int    `mapstructure:"port"`
-	Sort  string `mapstructure:"sort"`
-	CSS   string `mapstructure:"css"`
-	Title string `mapstructure:"title"`
+	Port int `mapstructure:"port"`
 }
 
 // Validate validates the configuration
 func (c *Config) Validate() error {
-	if c.BaseDirectory == "" {
+	if err := c.General.Validate(); err != nil {
+		return fmt.Errorf("general config: %w", err)
+	}
+
+	if err := c.Serve.Validate(); err != nil {
+		return fmt.Errorf("serve config: %w", err)
+	}
+
+	return nil
+}
+
+// Validate validates the general configuration
+func (g *GeneralConfig) Validate() error {
+	if g.BaseDirectory == "" {
 		return fmt.Errorf("base_directory is required")
 	}
 
-	// Validate serve config
-	if err := c.Serve.Validate(); err != nil {
-		return fmt.Errorf("serve config: %w", err)
+	validSorts := map[string]bool{SortDesc: true, SortAsc: true}
+	if g.Sort != "" && !validSorts[g.Sort] {
+		return fmt.Errorf("invalid sort: %s (must be one of: desc, asc)", g.Sort)
 	}
 
 	return nil
@@ -60,37 +78,37 @@ func (s *ServeConfig) Validate() error {
 		return fmt.Errorf("port must be between 0 and 65535")
 	}
 
-	validSorts := map[string]bool{SortDesc: true, SortAsc: true}
-	if s.Sort != "" && !validSorts[s.Sort] {
-		return fmt.Errorf("invalid sort: %s (must be one of: desc, asc)", s.Sort)
-	}
-
 	return nil
 }
 
 // SetDefaults sets default values for the configuration
 func (c *Config) SetDefaults() {
-	if c.DateFormat == "" {
-		c.DateFormat = "2006-01-02"
-	}
-	if c.PathFormat == "" {
-		c.PathFormat = "2006-01-02.md"
-	}
-	if c.FileTemplate == "" {
-		c.FileTemplate = "# {{ .Date }}\n"
-	}
+	c.General.SetDefaults()
 	c.Serve.SetDefaults()
+}
+
+// SetDefaults sets default values for the general configuration
+func (g *GeneralConfig) SetDefaults() {
+	if g.DateFormat == "" {
+		g.DateFormat = "2006-01-02"
+	}
+	if g.PathFormat == "" {
+		g.PathFormat = "2006-01-02.md"
+	}
+	if g.FileTemplate == "" {
+		g.FileTemplate = "# {{ .Date }}\n"
+	}
+	if g.Title == "" {
+		g.Title = "Journal"
+	}
+	if g.Sort == "" {
+		g.Sort = DefaultSort
+	}
 }
 
 // SetDefaults sets default values for the serve configuration
 func (s *ServeConfig) SetDefaults() {
 	if s.Port == 0 {
 		s.Port = DefaultPort
-	}
-	if s.Sort == "" {
-		s.Sort = DefaultSort
-	}
-	if s.Title == "" {
-		s.Title = "Journal"
 	}
 }
