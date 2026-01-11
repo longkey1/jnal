@@ -17,7 +17,7 @@ var (
 
 var rootCmd = &cobra.Command{
 	Use:   "jnal",
-	Short: "Text file based journal command",
+	Short: "A simple CLI tool for daily journaling in Markdown",
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		// Skip config loading for commands that don't need it
 		if cmd.Name() == "init" || cmd.Name() == "help" || cmd.Name() == "completion" || cmd.Name() == "version" {

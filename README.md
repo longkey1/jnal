@@ -1,11 +1,11 @@
 # jnal
 
-Text file based journal command.
+A simple CLI tool for daily journaling in Markdown.
 
 ## Usage
 
 ```
-Text file based journal command
+A simple CLI tool for daily journaling in Markdown
 
 Usage:
   jnal [command]
