@@ -38,10 +38,7 @@ body {
 h1 { border-bottom: 2px solid #333; padding-bottom: 10px; }
 a { color: #007acc; text-decoration: none; }
 a:hover { text-decoration: underline; }
-ul { list-style: none; padding: 0; }
-li { padding: 8px 0; border-bottom: 1px solid #eee; }
-li:last-child { border-bottom: none; }
-header { margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #ddd; }
+nav { border-bottom: 1px solid #ddd; margin-bottom: 20px; }
 .content {
     background: white;
     padding: 20px;
@@ -54,8 +51,6 @@ header { margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #dd
 .content code { padding: 2px 6px; border-radius: 3px; }
 .content pre code { background: none; padding: 0; }
 .content blockquote { border-left: 4px solid #ddd; margin: 0; padding-left: 20px; color: #666; }
-.meta { color: #666; font-size: 0.9em; margin-bottom: 20px; }
-.date { font-family: monospace; color: #666; margin-right: 10px; }
 `
 
 // Server represents the journal preview server
@@ -137,7 +132,6 @@ func (s *Server) Start(ctx context.Context) error {
 	// Setup HTTP handlers
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", s.handleIndex)
-	mux.HandleFunc("/entry/", s.handleEntry)
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", s.cfg.Port),
@@ -258,11 +252,12 @@ func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 	entries := s.entries
 	s.mu.RUnlock()
 
+	templateEntries, years := convertToTemplateEntries(entries)
+
 	data := IndexData{
 		Title:   "Journal",
-		Entries: entries,
-		Sort:    s.cfg.Sort,
-		Updated: time.Now(),
+		Entries: templateEntries,
+		Years:   years,
 		CSS:     template.CSS(s.css),
 	}
 
@@ -271,60 +266,44 @@ func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// handleEntry handles individual entry pages
-func (s *Server) handleEntry(w http.ResponseWriter, r *http.Request) {
-	dateStr := r.URL.Path[len("/entry/"):]
-	if dateStr == "" {
-		http.NotFound(w, r)
-		return
-	}
+// convertToTemplateEntries converts journal entries to template entries with year markers
+func convertToTemplateEntries(entries journal.Entries) ([]TemplateEntry, []string) {
+	templateEntries := make([]TemplateEntry, len(entries))
+	years := []string{}
+	lastYear := ""
 
-	// Remove .html suffix if present
-	if len(dateStr) > 5 && dateStr[len(dateStr)-5:] == ".html" {
-		dateStr = dateStr[:len(dateStr)-5]
-	}
+	for i, e := range entries {
+		year := e.Date.Format("2006")
+		showYear := year != lastYear
+		if showYear {
+			years = append(years, year)
+			lastYear = year
+		}
 
-	s.mu.RLock()
-	var entry *journal.Entry
-	for i := range s.entries {
-		if s.entries[i].Date.Format("2006-01-02") == dateStr {
-			entry = &s.entries[i]
-			break
+		templateEntries[i] = TemplateEntry{
+			Date:      e.Date,
+			Content:   template.HTML(e.Content),
+			ShowYear:  showYear,
+			YearLabel: year,
 		}
 	}
-	s.mu.RUnlock()
 
-	if entry == nil {
-		http.NotFound(w, r)
-		return
-	}
+	return templateEntries, years
+}
 
-	data := EntryData{
-		Title:   entry.Date.Format("2006-01-02"),
-		Entry:   *entry,
-		Content: template.HTML(entry.Content),
-		CSS:     template.CSS(s.css),
-	}
-
-	if err := s.tmpl.ExecuteTemplate(w, "entry.html", data); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
+// TemplateEntry represents an entry for template rendering
+type TemplateEntry struct {
+	Date      time.Time
+	Content   template.HTML
+	ShowYear  bool
+	YearLabel string
 }
 
 // IndexData represents data for the index template
 type IndexData struct {
 	Title   string
-	Entries journal.Entries
-	Sort    string
-	Updated time.Time
-	CSS     template.CSS
-}
-
-// EntryData represents data for the entry template
-type EntryData struct {
-	Title   string
-	Entry   journal.Entry
-	Content template.HTML
+	Entries []TemplateEntry
+	Years   []string
 	CSS     template.CSS
 }
 
@@ -390,12 +369,14 @@ func (b *Builder) Build(outputDir string) error {
 		entries[i].Content = content
 	}
 
+	// Convert to template entries
+	templateEntries, years := convertToTemplateEntries(entries)
+
 	// Generate index.html
 	indexData := IndexData{
 		Title:   "Journal",
-		Entries: entries,
-		Sort:    b.cfg.Sort,
-		Updated: time.Now(),
+		Entries: templateEntries,
+		Years:   years,
 		CSS:     template.CSS(b.css),
 	}
 
@@ -408,33 +389,6 @@ func (b *Builder) Build(outputDir string) error {
 
 	if err := b.tmpl.ExecuteTemplate(indexFile, "index.html", indexData); err != nil {
 		return fmt.Errorf("executing index template: %w", err)
-	}
-
-	// Generate entry pages
-	entryDir := filepath.Join(outputDir, "entry")
-	if err := os.MkdirAll(entryDir, 0755); err != nil {
-		return fmt.Errorf("creating entry directory: %w", err)
-	}
-
-	for _, entry := range entries {
-		entryData := EntryData{
-			Title:   entry.Date.Format("2006-01-02"),
-			Entry:   entry,
-			Content: template.HTML(entry.Content),
-			CSS:     template.CSS(b.css),
-		}
-
-		entryPath := filepath.Join(entryDir, entry.Date.Format("2006-01-02")+".html")
-		entryFile, err := os.Create(entryPath)
-		if err != nil {
-			return fmt.Errorf("creating entry file: %w", err)
-		}
-
-		if err := b.tmpl.ExecuteTemplate(entryFile, "entry.html", entryData); err != nil {
-			entryFile.Close()
-			return fmt.Errorf("executing entry template: %w", err)
-		}
-		entryFile.Close()
 	}
 
 	return nil

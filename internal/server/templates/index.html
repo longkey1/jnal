@@ -4,25 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ .Title }}</title>
+    <style>
+    nav { position: sticky; top: 0; background: inherit; padding: 10px 0; z-index: 100; }
+    nav a { margin-right: 15px; }
+    </style>
     <style>{{ .CSS }}</style>
 </head>
 <body>
     <h1>{{ .Title }}</h1>
-    <div class="meta">
-        Sort: {{ .Sort }} | Updated: {{ .Updated.Format "2006-01-02 15:04:05" }}
-    </div>
-
-    <ul>
-        {{ range .Entries }}
-        <li>
-            <span class="date">{{ .Date.Format "2006-01-02" }}</span>
-            <a href="/entry/{{ .Date.Format "2006-01-02" }}.html">{{ .Date.Format "2006-01-02" }}</a>
-        </li>
-        {{ end }}
-    </ul>
 
     {{ if eq (len .Entries) 0 }}
     <p>No journal entries found.</p>
+    {{ else }}
+    <nav>
+        {{ range .Years }}
+        <a href="#{{ . }}">{{ . }}</a>
+        {{ end }}
+    </nav>
+
+    {{ range .Entries }}
+    {{ if .ShowYear }}<h2 id="{{ .YearLabel }}">{{ .YearLabel }}</h2>{{ end }}
+    <article id="{{ .Date.Format "2006-01-02" }}">
+        <h3>{{ .Date.Format "2006-01-02" }}</h3>
+        <div class="content">
+            {{ .Content }}
+        </div>
+    </article>
+    {{ end }}
     {{ end }}
 </body>
 </html>

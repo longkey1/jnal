@@ -115,7 +115,7 @@ Show file or directory path:
 ```bash
 jnal path                      # Today's file path
 jnal path --date 2024-01-15    # Specific date's file path
-jnal path --type base          # Base directory path
+jnal path --base               # Base directory path
 jnal path --check              # Check if path exists
 ```
 
