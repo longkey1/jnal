@@ -201,7 +201,11 @@ func (s *Server) loadEntryContent(path string) (string, error) {
 		return "", err
 	}
 
-	return shiftHeadings(buf.String(), 4), nil
+	shift := s.cfg.General.GetHeadingShift()
+	if shift > 0 {
+		return shiftHeadings(buf.String(), shift), nil
+	}
+	return buf.String(), nil
 }
 
 // shiftHeadings shifts HTML heading levels by the specified amount
@@ -446,5 +450,9 @@ func (b *Builder) loadEntryContent(path string) (string, error) {
 		return "", err
 	}
 
-	return shiftHeadings(buf.String(), 4), nil
+	shift := b.cfg.General.GetHeadingShift()
+	if shift > 0 {
+		return shiftHeadings(buf.String(), shift), nil
+	}
+	return buf.String(), nil
 }

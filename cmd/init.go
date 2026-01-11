@@ -20,6 +20,7 @@ path_format = "2006-01-02.md"
 file_template = "# {{ .Date }}\n"
 title = "Journal"
 sort = "desc"
+# heading_shift = 4  # Shift heading levels in HTML output (0 to disable)
 # css = "https://cdn.jsdelivr.net/npm/water.css@2/out/water.css"
 
 [serve]

@@ -13,8 +13,9 @@ const (
 
 // Default values
 const (
-	DefaultPort = 8080
-	DefaultSort = "desc"
+	DefaultPort         = 8080
+	DefaultSort         = "desc"
+	DefaultHeadingShift = 4
 )
 
 // Sort options
@@ -38,6 +39,7 @@ type GeneralConfig struct {
 	Title         string `mapstructure:"title"`
 	Sort          string `mapstructure:"sort"`
 	CSS           string `mapstructure:"css"`
+	HeadingShift  *int   `mapstructure:"heading_shift"`
 }
 
 // ServeConfig represents the serve command configuration
@@ -104,6 +106,18 @@ func (g *GeneralConfig) SetDefaults() {
 	if g.Sort == "" {
 		g.Sort = DefaultSort
 	}
+	if g.HeadingShift == nil {
+		defaultShift := DefaultHeadingShift
+		g.HeadingShift = &defaultShift
+	}
+}
+
+// GetHeadingShift returns the heading shift value (0 means disabled)
+func (g *GeneralConfig) GetHeadingShift() int {
+	if g.HeadingShift == nil {
+		return DefaultHeadingShift
+	}
+	return *g.HeadingShift
 }
 
 // SetDefaults sets default values for the serve configuration

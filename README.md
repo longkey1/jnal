@@ -87,6 +87,23 @@ The year navigation is sticky by default. You can override this behavior:
 nav { position: static; }
 ```
 
+### Heading Shift
+
+When rendering multiple journal entries on a single page, headings are shifted to maintain proper HTML hierarchy:
+
+- Page title: H1
+- Year: H2
+- Month: H3
+- Date: H4
+- Entry content H1 → H5, H2 → H6, etc.
+
+By default, `heading_shift = 4`. Set to `0` to disable and output entry content as-is:
+
+```toml
+[general]
+heading_shift = 0  # Disable heading shift
+```
+
 ### Sample Configuration
 
 ```toml
