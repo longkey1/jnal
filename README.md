@@ -81,6 +81,12 @@ body { max-width: 800px; margin: 0 auto; }
 """
 ```
 
+The year navigation is sticky by default. You can override this behavior:
+
+```css
+nav { position: static; }
+```
+
 ### Sample Configuration
 
 ```toml

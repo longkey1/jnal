@@ -252,13 +252,13 @@ func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 	entries := s.entries
 	s.mu.RUnlock()
 
-	templateEntries, years := convertToTemplateEntries(entries)
+	templateEntries, yearNavs := convertToTemplateEntries(entries)
 
 	data := IndexData{
-		Title:   "Journal",
-		Entries: templateEntries,
-		Years:   years,
-		CSS:     template.CSS(s.css),
+		Title:    "Journal",
+		Entries:  templateEntries,
+		YearNavs: yearNavs,
+		CSS:      template.CSS(s.css),
 	}
 
 	if err := s.tmpl.ExecuteTemplate(w, "index.html", data); err != nil {
@@ -266,45 +266,64 @@ func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// convertToTemplateEntries converts journal entries to template entries with year markers
-func convertToTemplateEntries(entries journal.Entries) ([]TemplateEntry, []string) {
+// convertToTemplateEntries converts journal entries to template entries with year/month markers
+func convertToTemplateEntries(entries journal.Entries) ([]TemplateEntry, []YearNav) {
 	templateEntries := make([]TemplateEntry, len(entries))
-	years := []string{}
+	yearNavs := []YearNav{}
 	lastYear := ""
+	lastMonth := ""
 
 	for i, e := range entries {
 		year := e.Date.Format("2006")
+		month := e.Date.Format("01")
+		yearMonth := year + "-" + month
+
 		showYear := year != lastYear
+		showMonth := yearMonth != lastMonth
+
 		if showYear {
-			years = append(years, year)
+			yearNavs = append(yearNavs, YearNav{Year: year, Months: []string{month}})
 			lastYear = year
+		} else if showMonth {
+			yearNavs[len(yearNavs)-1].Months = append(yearNavs[len(yearNavs)-1].Months, month)
 		}
+		lastMonth = yearMonth
 
 		templateEntries[i] = TemplateEntry{
-			Date:      e.Date,
-			Content:   template.HTML(e.Content),
-			ShowYear:  showYear,
-			YearLabel: year,
+			Date:       e.Date,
+			Content:    template.HTML(e.Content),
+			ShowYear:   showYear,
+			YearLabel:  year,
+			ShowMonth:  showMonth,
+			MonthLabel: yearMonth,
 		}
 	}
 
-	return templateEntries, years
+	return templateEntries, yearNavs
 }
 
 // TemplateEntry represents an entry for template rendering
 type TemplateEntry struct {
-	Date      time.Time
-	Content   template.HTML
-	ShowYear  bool
-	YearLabel string
+	Date       time.Time
+	Content    template.HTML
+	ShowYear   bool
+	YearLabel  string
+	ShowMonth  bool
+	MonthLabel string
+}
+
+// YearNav represents navigation for a year
+type YearNav struct {
+	Year   string
+	Months []string
 }
 
 // IndexData represents data for the index template
 type IndexData struct {
-	Title   string
-	Entries []TemplateEntry
-	Years   []string
-	CSS     template.CSS
+	Title    string
+	Entries  []TemplateEntry
+	YearNavs []YearNav
+	CSS      template.CSS
 }
 
 // Builder generates static HTML files
@@ -370,14 +389,14 @@ func (b *Builder) Build(outputDir string) error {
 	}
 
 	// Convert to template entries
-	templateEntries, years := convertToTemplateEntries(entries)
+	templateEntries, yearNavs := convertToTemplateEntries(entries)
 
 	// Generate index.html
 	indexData := IndexData{
-		Title:   "Journal",
-		Entries: templateEntries,
-		Years:   years,
-		CSS:     template.CSS(b.css),
+		Title:    "Journal",
+		Entries:  templateEntries,
+		YearNavs: yearNavs,
+		CSS:      template.CSS(b.css),
 	}
 
 	indexPath := filepath.Join(outputDir, "index.html")

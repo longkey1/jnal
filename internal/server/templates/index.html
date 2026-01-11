@@ -17,15 +17,16 @@
     <p>No journal entries found.</p>
     {{ else }}
     <nav>
-        {{ range .Years }}
-        <a href="#{{ . }}">{{ . }}</a>
+        {{ range .YearNavs }}
+        <span><a href="#{{ .Year }}">{{ .Year }}</a>: {{ $year := .Year }}{{ range .Months }}<a href="#{{ $year }}-{{ . }}">{{ . }}</a> {{ end }}</span>
         {{ end }}
     </nav>
 
     {{ range .Entries }}
     {{ if .ShowYear }}<h2 id="{{ .YearLabel }}">{{ .YearLabel }}</h2>{{ end }}
+    {{ if .ShowMonth }}<h3 id="{{ .MonthLabel }}">{{ .MonthLabel }}</h3>{{ end }}
     <article id="{{ .Date.Format "2006-01-02" }}">
-        <h3>{{ .Date.Format "2006-01-02" }}</h3>
+        <h4>{{ .Date.Format "2006-01-02" }}</h4>
         <div class="content">
             {{ .Content }}
         </div>
