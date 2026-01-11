@@ -18,7 +18,7 @@
     {{ else }}
     <nav>
         {{ range .YearNavs }}
-        <span><a href="#{{ .Year }}">{{ .Year }}</a>: {{ $year := .Year }}{{ range .Months }}<a href="#{{ $year }}-{{ . }}">{{ . }}</a> {{ end }}</span>
+        <a href="#{{ .Year }}">{{ .Year }}</a>
         {{ end }}
     </nav>
 

@@ -34,9 +34,10 @@ type Config struct {
 
 // ServeConfig represents the serve command configuration
 type ServeConfig struct {
-	Port int    `mapstructure:"port"`
-	Sort string `mapstructure:"sort"`
-	CSS  string `mapstructure:"css"`
+	Port  int    `mapstructure:"port"`
+	Sort  string `mapstructure:"sort"`
+	CSS   string `mapstructure:"css"`
+	Title string `mapstructure:"title"`
 }
 
 // Validate validates the configuration
@@ -88,5 +89,8 @@ func (s *ServeConfig) SetDefaults() {
 	}
 	if s.Sort == "" {
 		s.Sort = DefaultSort
+	}
+	if s.Title == "" {
+		s.Title = "Journal"
 	}
 }

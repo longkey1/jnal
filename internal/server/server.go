@@ -39,18 +39,19 @@ h1 { border-bottom: 2px solid #333; padding-bottom: 10px; }
 a { color: #007acc; text-decoration: none; }
 a:hover { text-decoration: underline; }
 nav { border-bottom: 1px solid #ddd; margin-bottom: 20px; }
-.content {
+article {
     background: white;
     padding: 20px;
     border-radius: 5px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
 }
-.content h1:first-child { margin-top: 0; }
-.content pre, .content code { background: #f4f4f4; }
-.content pre { padding: 15px; border-radius: 5px; overflow-x: auto; }
-.content code { padding: 2px 6px; border-radius: 3px; }
-.content pre code { background: none; padding: 0; }
-.content blockquote { border-left: 4px solid #ddd; margin: 0; padding-left: 20px; color: #666; }
+article h4 { margin-top: 0; }
+article pre, article code { background: #f4f4f4; }
+article pre { padding: 15px; border-radius: 5px; overflow-x: auto; }
+article code { padding: 2px 6px; border-radius: 3px; }
+article pre code { background: none; padding: 0; }
+article blockquote { border-left: 4px solid #ddd; margin: 0; padding-left: 20px; color: #666; }
 `
 
 // Server represents the journal preview server
@@ -255,7 +256,7 @@ func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 	templateEntries, yearNavs := convertToTemplateEntries(entries)
 
 	data := IndexData{
-		Title:    "Journal",
+		Title:    s.cfg.Title,
 		Entries:  templateEntries,
 		YearNavs: yearNavs,
 		CSS:      template.CSS(s.css),
@@ -393,7 +394,7 @@ func (b *Builder) Build(outputDir string) error {
 
 	// Generate index.html
 	indexData := IndexData{
-		Title:    "Journal",
+		Title:    b.cfg.Title,
 		Entries:  templateEntries,
 		YearNavs: yearNavs,
 		CSS:      template.CSS(b.css),
