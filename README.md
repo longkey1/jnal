@@ -14,7 +14,7 @@ Available Commands:
   completion  Generate the autocompletion script for the specified shell
   help        Help about any command
   init        Initialize jnal configuration
-  new         Create and open a journal entry
+  new         Create a journal entry
   path        Show file or directory path
   serve       Start a local preview server
   version     Show version information
@@ -53,22 +53,14 @@ jnal serve
 
 ### File Naming
 
-Journal files must contain `yyyy-mm-dd` format in the filename:
+Journal files are named in `yyyy-mm-dd.md` format:
 - `2024-01-15.md`
-- `2024-01-15-meeting.md`
-- `diary-2024-01-15.md`
 
 ### Template Placeholders
 
 **file_template:**
 - `{{ .Date }}` - Formatted date
 - `{{ .Env.<NAME> }}` - Environment variable (e.g., `{{ .Env.HOME }}`)
-
-**open_command:**
-- `{{ .BaseDir }}` - Base directory path
-- `{{ .Date }}` - Formatted date
-- `{{ .File }}` - Full file path
-- `{{ .Env.<NAME> }}` - Environment variable
 
 ### Sample Configuration
 
@@ -77,23 +69,20 @@ Journal files must contain `yyyy-mm-dd` format in the filename:
 
 base_directory = "/home/user/journal"
 date_format = "2006-01-02"
-file_name_format = "2006-01-02.md"
 file_template = "# {{ .Date }}\n"
-open_command = "vim {{ .File }}"
 
 [serve]
 port = 8080
-group = "none"     # none, year, month, week
 sort = "desc"      # desc, asc
 ```
 
-`file_name_format` and `file_template` use [Go's time format](https://golang.org/src/time/format.go).
+`file_template` uses [Go's time format](https://golang.org/src/time/format.go).
 
 ## Commands
 
 ### new
 
-Create and open a journal entry for the specified date:
+Create a journal entry for the specified date:
 
 ```bash
 jnal new              # Today's entry
@@ -116,10 +105,9 @@ jnal path -c                 # Check if path exists
 Start a local preview server with hot reload:
 
 ```bash
-jnal serve                         # Default port 8080
-jnal serve -p 3000                 # Custom port
-jnal serve -g month -s desc        # Group by month, newest first
-jnal serve -g year -s asc          # Group by year, oldest first
+jnal serve                   # Default port 8080
+jnal serve -p 3000           # Custom port
+jnal serve -s asc            # Oldest first
 ```
 
 ### init

@@ -13,34 +13,13 @@ func TestConfig_Validate(t *testing.T) {
 		{
 			name: "valid config",
 			config: Config{
-				BaseDirectory:  "/home/user/journal",
-				FileNameFormat: "2006-01-02.md",
-				OpenCommand:    "vim {{ .File }}",
+				BaseDirectory: "/home/user/journal",
 			},
 			wantErr: false,
 		},
 		{
 			name: "missing base_directory",
-			config: Config{
-				FileNameFormat: "2006-01-02.md",
-				OpenCommand:    "vim {{ .File }}",
-			},
-			wantErr: true,
-		},
-		{
-			name: "missing file_name_format",
-			config: Config{
-				BaseDirectory: "/home/user/journal",
-				OpenCommand:   "vim {{ .File }}",
-			},
-			wantErr: true,
-		},
-		{
-			name: "missing open_command",
-			config: Config{
-				BaseDirectory:  "/home/user/journal",
-				FileNameFormat: "2006-01-02.md",
-			},
+			config: Config{},
 			wantErr: true,
 		},
 	}
@@ -63,7 +42,7 @@ func TestServeConfig_Validate(t *testing.T) {
 	}{
 		{
 			name:    "valid config",
-			config:  ServeConfig{Port: 8080, Group: "month", Sort: "desc"},
+			config:  ServeConfig{Port: 8080, Sort: "desc"},
 			wantErr: false,
 		},
 		{
@@ -79,11 +58,6 @@ func TestServeConfig_Validate(t *testing.T) {
 		{
 			name:    "invalid port too high",
 			config:  ServeConfig{Port: 70000},
-			wantErr: true,
-		},
-		{
-			name:    "invalid group",
-			config:  ServeConfig{Group: "invalid"},
 			wantErr: true,
 		},
 		{
@@ -110,14 +84,8 @@ func TestConfig_SetDefaults(t *testing.T) {
 	if cfg.DateFormat != "2006-01-02" {
 		t.Errorf("DateFormat = %v, want 2006-01-02", cfg.DateFormat)
 	}
-	if cfg.FileNameFormat != "2006-01-02.md" {
-		t.Errorf("FileNameFormat = %v, want 2006-01-02.md", cfg.FileNameFormat)
-	}
 	if cfg.Serve.Port != DefaultPort {
 		t.Errorf("Serve.Port = %v, want %v", cfg.Serve.Port, DefaultPort)
-	}
-	if cfg.Serve.Group != DefaultGroup {
-		t.Errorf("Serve.Group = %v, want %v", cfg.Serve.Group, DefaultGroup)
 	}
 	if cfg.Serve.Sort != DefaultSort {
 		t.Errorf("Serve.Sort = %v, want %v", cfg.Serve.Sort, DefaultSort)

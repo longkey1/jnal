@@ -3,7 +3,6 @@ package journal
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"time"
 
@@ -23,7 +22,7 @@ func New(cfg *config.Config) *Journal {
 
 // GetEntryPath returns the file path for a journal entry on the given date
 func (j *Journal) GetEntryPath(date time.Time) string {
-	filename := date.Format(j.cfg.FileNameFormat)
+	filename := date.Format(config.DefaultFileNameFormat)
 	return filepath.Join(j.cfg.BaseDirectory, filename)
 }
 
@@ -75,19 +74,6 @@ func (j *Journal) CreateEntry(date time.Time) (string, error) {
 	return entryPath, nil
 }
 
-// OpenEntry opens a journal entry with the configured editor
-func (j *Journal) OpenEntry(date time.Time) error {
-	cmd, err := j.buildOpenCommand(date)
-	if err != nil {
-		return fmt.Errorf("building open command: %w", err)
-	}
-
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("executing open command: %w", err)
-	}
-
-	return nil
-}
 
 // ListEntries returns all journal entries in the base directory
 func (j *Journal) ListEntries() (Entries, error) {
@@ -129,27 +115,6 @@ func (j *Journal) ListEntries() (Entries, error) {
 	return entries, nil
 }
 
-// buildOpenCommand builds the command to open a journal entry
-func (j *Journal) buildOpenCommand(date time.Time) (*exec.Cmd, error) {
-	entryPath := j.GetEntryPath(date)
-	dateStr := date.Format(j.cfg.DateFormat)
-
-	cmdStr, err := j.executeTemplate(j.cfg.OpenCommand, map[string]interface{}{
-		"BaseDir": j.cfg.BaseDirectory,
-		"Date":    dateStr,
-		"File":    entryPath,
-		"Env":     getEnvMap(),
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	cmd := exec.Command("sh", "-c", cmdStr)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	return cmd, nil
-}
 
 // buildEntryContent builds the initial content for a new entry
 func (j *Journal) buildEntryContent(date time.Time) (string, error) {

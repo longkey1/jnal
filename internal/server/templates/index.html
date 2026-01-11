@@ -65,26 +65,19 @@
 <body>
     <h1>{{ .Title }}</h1>
     <div class="meta">
-        Group: {{ .Group }} | Sort: {{ .Sort }} | Updated: {{ .Updated.Format "2006-01-02 15:04:05" }}
+        Sort: {{ .Sort }} | Updated: {{ .Updated.Format "2006-01-02 15:04:05" }}
     </div>
 
-    {{ range .Groups }}
-    <div class="group">
-        {{ if ne $.Group "none" }}
-        <div class="group-title">{{ .Name }}</div>
+    <ul>
+        {{ range .Entries }}
+        <li>
+            <span class="date">{{ .Date.Format "2006-01-02" }}</span>
+            <a href="/entry/{{ .Date.Format "2006-01-02" }}.html">{{ .Date.Format "2006-01-02" }}</a>
+        </li>
         {{ end }}
-        <ul>
-            {{ range .Entries }}
-            <li>
-                <span class="date">{{ .Date.Format "2006-01-02" }}</span>
-                <a href="/entry/{{ .Date.Format "2006-01-02" }}.html">{{ .Date.Format "2006-01-02" }}</a>
-            </li>
-            {{ end }}
-        </ul>
-    </div>
-    {{ end }}
+    </ul>
 
-    {{ if eq (len .Groups) 0 }}
+    {{ if eq (len .Entries) 0 }}
     <p>No journal entries found.</p>
     {{ end }}
 </body>

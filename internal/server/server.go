@@ -183,12 +183,9 @@ func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 	entries := s.entries
 	s.mu.RUnlock()
 
-	grouped := s.groupEntries(entries)
-
 	data := IndexData{
 		Title:   "Journal",
-		Groups:  grouped,
-		Group:   s.cfg.Group,
+		Entries: entries,
 		Sort:    s.cfg.Sort,
 		Updated: time.Now(),
 	}
@@ -237,59 +234,12 @@ func (s *Server) handleEntry(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// groupEntries groups entries by the configured grouping
-func (s *Server) groupEntries(entries journal.Entries) []EntryGroup {
-	if s.cfg.Group == config.GroupNone {
-		return []EntryGroup{{Name: "All", Entries: entries}}
-	}
-
-	groups := make(map[string]journal.Entries)
-	var groupOrder []string
-
-	for _, e := range entries {
-		var key string
-		switch s.cfg.Group {
-		case config.GroupYear:
-			key = e.Date.Format("2006")
-		case config.GroupMonth:
-			key = e.Date.Format("2006-01")
-		case config.GroupWeek:
-			year, week := e.Date.ISOWeek()
-			key = fmt.Sprintf("%d-W%02d", year, week)
-		default:
-			key = "All"
-		}
-
-		if _, exists := groups[key]; !exists {
-			groupOrder = append(groupOrder, key)
-		}
-		groups[key] = append(groups[key], e)
-	}
-
-	result := make([]EntryGroup, 0, len(groupOrder))
-	for _, name := range groupOrder {
-		result = append(result, EntryGroup{
-			Name:    name,
-			Entries: groups[name],
-		})
-	}
-
-	return result
-}
-
 // IndexData represents data for the index template
 type IndexData struct {
 	Title   string
-	Groups  []EntryGroup
-	Group   string
+	Entries journal.Entries
 	Sort    string
 	Updated time.Time
-}
-
-// EntryGroup represents a group of entries
-type EntryGroup struct {
-	Name    string
-	Entries journal.Entries
 }
 
 // EntryData represents data for the entry template

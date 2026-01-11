@@ -13,9 +13,8 @@ import (
 )
 
 var (
-	servePort  int
-	serveGroup string
-	serveSort  string
+	servePort int
+	serveSort string
 )
 
 var serveCmd = &cobra.Command{
@@ -28,9 +27,6 @@ The server watches for file changes and automatically reloads content.`,
 		serveCfg := cfg.Serve
 		if cmd.Flags().Changed("port") {
 			serveCfg.Port = servePort
-		}
-		if cmd.Flags().Changed("group") {
-			serveCfg.Group = serveGroup
 		}
 		if cmd.Flags().Changed("sort") {
 			serveCfg.Sort = serveSort
@@ -66,6 +62,5 @@ func init() {
 	rootCmd.AddCommand(serveCmd)
 
 	serveCmd.Flags().IntVarP(&servePort, "port", "p", config.DefaultPort, "Port to listen on")
-	serveCmd.Flags().StringVarP(&serveGroup, "group", "g", config.DefaultGroup, "Group entries by: none, year, month, week")
 	serveCmd.Flags().StringVarP(&serveSort, "sort", "s", config.DefaultSort, "Sort order: desc (newest first), asc (oldest first)")
 }

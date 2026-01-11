@@ -11,9 +11,8 @@ var newDate string
 
 var newCmd = &cobra.Command{
 	Use:   "new",
-	Short: "Create and open a journal entry",
-	Long: `Create a new journal entry for the specified date (or today if not specified).
-If an entry already exists for that date, it will be opened.`,
+	Short: "Create a journal entry",
+	Long:  `Create a new journal entry for the specified date (or today if not specified).`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// Parse the date
 		targetDate, err := dateutil.Parse(newDate)
@@ -27,12 +26,7 @@ If an entry already exists for that date, it will be opened.`,
 			return fmt.Errorf("creating entry: %w", err)
 		}
 
-		fmt.Printf("Opening %s\n", entryPath)
-
-		// Open the entry with the configured editor
-		if err := jnl.OpenEntry(targetDate); err != nil {
-			return fmt.Errorf("opening entry: %w", err)
-		}
+		fmt.Println(entryPath)
 
 		return nil
 	},
