@@ -21,6 +21,7 @@ file_template = "# {{ .Date }}\n"
 [serve]
 port = 8080
 sort = "desc"
+# css = "https://cdn.jsdelivr.net/npm/water.css@2/out/water.css"
 `
 
 var initCmd = &cobra.Command{

@@ -36,6 +36,7 @@ type Config struct {
 type ServeConfig struct {
 	Port int    `mapstructure:"port"`
 	Sort string `mapstructure:"sort"`
+	CSS  string `mapstructure:"css"`
 }
 
 // Validate validates the configuration

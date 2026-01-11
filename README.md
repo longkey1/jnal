@@ -43,7 +43,7 @@ vim ~/.config/jnal/config.toml
 jnal new
 
 # Create entry for a specific date
-jnal new -d 2024-01-15
+jnal new --date 2024-01-15
 
 # Preview journal entries in browser
 jnal serve
@@ -65,6 +65,21 @@ jnal serve
 - `{{ .Date }}` - Formatted date (using `date_format`)
 - `{{ .Env.<NAME> }}` - Environment variable (e.g., `{{ .Env.HOME }}`)
 
+### CSS Customization
+
+`css` can be a URL (downloaded at startup) or inline CSS:
+
+```toml
+[serve]
+# URL (classless CSS frameworks work great)
+css = "https://cdn.jsdelivr.net/npm/water.css@2/out/water.css"
+
+# Or inline CSS
+css = """
+body { max-width: 800px; margin: 0 auto; }
+"""
+```
+
 ### Sample Configuration
 
 ```toml
@@ -77,7 +92,8 @@ file_template = "# {{ .Date }}\n"
 
 [serve]
 port = 8080
-sort = "desc"      # desc, asc
+sort = "desc"
+css = "https://cdn.jsdelivr.net/npm/water.css@2/out/water.css"
 ```
 
 ## Commands
@@ -87,8 +103,8 @@ sort = "desc"      # desc, asc
 Create a journal entry for the specified date:
 
 ```bash
-jnal new              # Today's entry
-jnal new -d 2024-01-15  # Specific date
+jnal new                       # Today's entry
+jnal new --date 2024-01-15     # Specific date
 ```
 
 ### path
@@ -96,10 +112,10 @@ jnal new -d 2024-01-15  # Specific date
 Show file or directory path:
 
 ```bash
-jnal path                    # Today's file path
-jnal path -d 2024-01-15      # Specific date's file path
-jnal path -t base            # Base directory path
-jnal path -c                 # Check if path exists
+jnal path                      # Today's file path
+jnal path --date 2024-01-15    # Specific date's file path
+jnal path --type base          # Base directory path
+jnal path --check              # Check if path exists
 ```
 
 ### serve
@@ -107,9 +123,18 @@ jnal path -c                 # Check if path exists
 Start a local preview server with hot reload:
 
 ```bash
-jnal serve                   # Default port 8080
-jnal serve -p 3000           # Custom port
-jnal serve -s asc            # Oldest first
+jnal serve                     # Default port 8080
+jnal serve --port 3000         # Custom port
+jnal serve --sort asc          # Oldest first
+```
+
+### build
+
+Generate static HTML files:
+
+```bash
+jnal build                     # Output to public/
+jnal build --output dist       # Custom output directory
 ```
 
 ### init
