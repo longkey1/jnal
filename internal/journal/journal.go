@@ -22,8 +22,8 @@ func New(cfg *config.Config) *Journal {
 
 // GetEntryPath returns the file path for a journal entry on the given date
 func (j *Journal) GetEntryPath(date time.Time) string {
-	filename := date.Format(config.DefaultFileNameFormat)
-	return filepath.Join(j.cfg.BaseDirectory, filename)
+	relativePath := date.Format(j.cfg.PathFormat)
+	return filepath.Join(j.cfg.BaseDirectory, relativePath)
 }
 
 // GetBaseDir returns the base directory path

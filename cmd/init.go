@@ -15,13 +15,11 @@ const defaultConfigTemplate = `# jnal configuration file
 
 base_directory = "%s"
 date_format = "2006-01-02"
-file_name_format = "2006-01-02.md"
+path_format = "2006-01-02.md"
 file_template = "# {{ .Date }}\n"
-open_command = "vim {{ .File }}"
 
 [serve]
 port = 8080
-group = "none"
 sort = "desc"
 `
 

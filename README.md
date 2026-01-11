@@ -51,15 +51,18 @@ jnal serve
 
 ## Configuration
 
-### File Naming
+### Path Format
 
-Journal files are named in `yyyy-mm-dd.md` format:
-- `2024-01-15.md`
+`path_format` defines the file path structure using [Go's time format](https://golang.org/src/time/format.go):
+
+- `2006-01-02.md` → `2024-01-15.md`
+- `2006/2006-01-02.md` → `2024/2024-01-15.md`
+- `2006/01/2006-01-02.md` → `2024/01/2024-01-15.md`
 
 ### Template Placeholders
 
 **file_template:**
-- `{{ .Date }}` - Formatted date
+- `{{ .Date }}` - Formatted date (using `date_format`)
 - `{{ .Env.<NAME> }}` - Environment variable (e.g., `{{ .Env.HOME }}`)
 
 ### Sample Configuration
@@ -69,14 +72,13 @@ Journal files are named in `yyyy-mm-dd.md` format:
 
 base_directory = "/home/user/journal"
 date_format = "2006-01-02"
+path_format = "2006/2006-01-02.md"
 file_template = "# {{ .Date }}\n"
 
 [serve]
 port = 8080
 sort = "desc"      # desc, asc
 ```
-
-`file_template` uses [Go's time format](https://golang.org/src/time/format.go).
 
 ## Commands
 

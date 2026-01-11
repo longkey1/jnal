@@ -13,9 +13,8 @@ const (
 
 // Default values
 const (
-	DefaultPort           = 8080
-	DefaultSort           = "desc"
-	DefaultFileNameFormat = "2006-01-02.md"
+	DefaultPort = 8080
+	DefaultSort = "desc"
 )
 
 // Sort options
@@ -28,6 +27,7 @@ const (
 type Config struct {
 	BaseDirectory string      `mapstructure:"base_directory"`
 	DateFormat    string      `mapstructure:"date_format"`
+	PathFormat    string      `mapstructure:"path_format"`
 	FileTemplate  string      `mapstructure:"file_template"`
 	Serve         ServeConfig `mapstructure:"serve"`
 }
@@ -70,6 +70,9 @@ func (s *ServeConfig) Validate() error {
 func (c *Config) SetDefaults() {
 	if c.DateFormat == "" {
 		c.DateFormat = "2006-01-02"
+	}
+	if c.PathFormat == "" {
+		c.PathFormat = "2006-01-02.md"
 	}
 	if c.FileTemplate == "" {
 		c.FileTemplate = "# {{ .Date }}\n"
