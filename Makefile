@@ -1,8 +1,12 @@
 .DEFAULT_GOAL := help
 
 ROOT := $(patsubst %/,%,$(dir $(realpath $(firstword $(MAKEFILE_LIST)))))
-BIN := $(ROOT)/bin
-DOTFILES := $(ROOT)/.dotfiles
+DIST := $(ROOT)/dist
+
+.PHONY: build
+build: ## Build binary to dist/
+	@mkdir -p $(DIST)
+	go build -o $(DIST)/jnal .
 
 .PHONY: tools
 tools: ## Install tools
