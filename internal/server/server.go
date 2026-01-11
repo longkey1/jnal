@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -200,7 +201,26 @@ func (s *Server) loadEntryContent(path string) (string, error) {
 		return "", err
 	}
 
-	return buf.String(), nil
+	return shiftHeadings(buf.String(), 4), nil
+}
+
+// shiftHeadings shifts HTML heading levels by the specified amount
+// H1 becomes H1+shift, H2 becomes H2+shift, etc.
+// Headings are clamped to H6 maximum
+func shiftHeadings(html string, shift int) string {
+	// Process from h6 to h1 to avoid double replacement
+	for level := 6; level >= 1; level-- {
+		newLevel := level + shift
+		if newLevel > 6 {
+			newLevel = 6
+		}
+
+		// Use regex to handle attributes in opening tags
+		re := regexp.MustCompile(fmt.Sprintf(`<h%d(\s|>)`, level))
+		html = re.ReplaceAllString(html, fmt.Sprintf("<h%d$1", newLevel))
+		html = strings.ReplaceAll(html, fmt.Sprintf("</h%d>", level), fmt.Sprintf("</h%d>", newLevel))
+	}
+	return html
 }
 
 // watchFiles watches for file changes and reloads entries
@@ -426,5 +446,5 @@ func (b *Builder) loadEntryContent(path string) (string, error) {
 		return "", err
 	}
 
-	return buf.String(), nil
+	return shiftHeadings(buf.String(), 4), nil
 }
