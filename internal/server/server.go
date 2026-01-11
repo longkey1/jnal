@@ -246,8 +246,20 @@ func (s *Server) watchFiles(ctx context.Context) {
 	}
 	defer watcher.Close()
 
-	if err := watcher.Add(s.baseDir); err != nil {
-		fmt.Printf("Error watching directory: %v\n", err)
+	// Watch base directory and all subdirectories
+	err = filepath.Walk(s.baseDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			if err := watcher.Add(path); err != nil {
+				fmt.Printf("Error watching directory %s: %v\n", path, err)
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		fmt.Printf("Error walking directory: %v\n", err)
 		return
 	}
 
