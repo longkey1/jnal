@@ -13,8 +13,9 @@ import (
 )
 
 var (
-	servePort int
-	serveSort string
+	servePort       int
+	serveSort       string
+	serveLiveReload bool
 )
 
 var serveCmd = &cobra.Command{
@@ -36,7 +37,7 @@ The server watches for file changes and automatically reloads content.`,
 			return fmt.Errorf("invalid config: %w", err)
 		}
 
-		srv, err := server.New(cfg, jnl, cfg.General.BaseDirectory)
+		srv, err := server.New(cfg, jnl, cfg.General.BaseDirectory, serveLiveReload)
 		if err != nil {
 			return fmt.Errorf("creating server: %w", err)
 		}
@@ -62,4 +63,5 @@ func init() {
 
 	serveCmd.Flags().IntVarP(&servePort, "port", "p", config.DefaultPort, "Port to listen on")
 	serveCmd.Flags().StringVarP(&serveSort, "sort", "s", config.DefaultSort, "Sort order: desc (newest first), asc (oldest first)")
+	serveCmd.Flags().BoolVarP(&serveLiveReload, "live-reload", "l", false, "Enable live reload on file changes")
 }

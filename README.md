@@ -146,12 +146,13 @@ jnal path --check              # Check if path exists
 
 ### serve
 
-Start a local preview server with hot reload:
+Start a local preview server:
 
 ```bash
 jnal serve                     # Default port 8080
 jnal serve --port 3000         # Custom port
 jnal serve --sort asc          # Oldest first
+jnal serve --live-reload       # Enable browser auto-reload on file changes
 ```
 
 ### build

@@ -33,5 +33,21 @@
     </article>
     {{ end }}
     {{ end }}
+
+    {{ if .LiveReload }}
+    <script>
+    (function() {
+        const es = new EventSource('/events');
+        es.onmessage = function(e) {
+            if (e.data === 'reload') {
+                location.reload();
+            }
+        };
+        es.onerror = function() {
+            console.log('SSE connection lost, reconnecting...');
+        };
+    })();
+    </script>
+    {{ end }}
 </body>
 </html>

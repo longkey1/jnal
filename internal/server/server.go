@@ -57,19 +57,24 @@ article blockquote { border-left: 4px solid #ddd; margin: 0; padding-left: 20px;
 
 // Server represents the journal preview server
 type Server struct {
-	cfg     *config.Config
-	journal *journal.Journal
-	baseDir string
-	css     string
+	cfg        *config.Config
+	journal    *journal.Journal
+	baseDir    string
+	css        string
+	liveReload bool
 
 	mu      sync.RWMutex
 	entries journal.Entries
 	tmpl    *template.Template
 	md      goldmark.Markdown
+
+	// SSE clients for live reload
+	sseClients   map[chan struct{}]struct{}
+	sseClientsMu sync.Mutex
 }
 
 // New creates a new Server instance
-func New(cfg *config.Config, jnl *journal.Journal, baseDir string) (*Server, error) {
+func New(cfg *config.Config, jnl *journal.Journal, baseDir string, liveReload bool) (*Server, error) {
 	tmpl, err := template.ParseFS(templatesFS, "templates/*.html")
 	if err != nil {
 		return nil, fmt.Errorf("parsing templates: %w", err)
@@ -82,12 +87,14 @@ func New(cfg *config.Config, jnl *journal.Journal, baseDir string) (*Server, err
 	}
 
 	return &Server{
-		cfg:     cfg,
-		journal: jnl,
-		baseDir: baseDir,
-		css:     css,
-		tmpl:    tmpl,
-		md:      goldmark.New(),
+		cfg:        cfg,
+		journal:    jnl,
+		baseDir:    baseDir,
+		css:        css,
+		liveReload: liveReload,
+		tmpl:       tmpl,
+		md:         goldmark.New(),
+		sseClients: make(map[chan struct{}]struct{}),
 	}, nil
 }
 
@@ -134,6 +141,9 @@ func (s *Server) Start(ctx context.Context) error {
 	// Setup HTTP handlers
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", s.handleIndex)
+	if s.liveReload {
+		mux.HandleFunc("/events", s.handleSSE)
+	}
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", s.cfg.Serve.Port),
@@ -255,6 +265,7 @@ func (s *Server) watchFiles(ctx context.Context) {
 					if err := s.reloadEntries(); err != nil {
 						fmt.Printf("Error reloading entries: %v\n", err)
 					}
+					s.notifyClients()
 				}
 			}
 		case err, ok := <-watcher.Errors:
@@ -262,6 +273,62 @@ func (s *Server) watchFiles(ctx context.Context) {
 				return
 			}
 			fmt.Printf("Watcher error: %v\n", err)
+		}
+	}
+}
+
+// handleSSE handles Server-Sent Events for live reload
+func (s *Server) handleSSE(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+
+	// Create a channel for this client
+	clientChan := make(chan struct{}, 1)
+
+	// Register client
+	s.sseClientsMu.Lock()
+	s.sseClients[clientChan] = struct{}{}
+	s.sseClientsMu.Unlock()
+
+	// Unregister client on disconnect
+	defer func() {
+		s.sseClientsMu.Lock()
+		delete(s.sseClients, clientChan)
+		s.sseClientsMu.Unlock()
+		close(clientChan)
+	}()
+
+	// Send initial connection message
+	fmt.Fprintf(w, "data: connected\n\n")
+	if f, ok := w.(http.Flusher); ok {
+		f.Flush()
+	}
+
+	// Wait for reload signals or client disconnect
+	for {
+		select {
+		case <-clientChan:
+			fmt.Fprintf(w, "data: reload\n\n")
+			if f, ok := w.(http.Flusher); ok {
+				f.Flush()
+			}
+		case <-r.Context().Done():
+			return
+		}
+	}
+}
+
+// notifyClients sends reload signal to all connected SSE clients
+func (s *Server) notifyClients() {
+	s.sseClientsMu.Lock()
+	defer s.sseClientsMu.Unlock()
+
+	for clientChan := range s.sseClients {
+		select {
+		case clientChan <- struct{}{}:
+		default:
+			// Channel is full, skip
 		}
 	}
 }
@@ -280,10 +347,11 @@ func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 	templateEntries, yearNavs := convertToTemplateEntries(entries)
 
 	data := IndexData{
-		Title:    s.cfg.General.Title,
-		Entries:  templateEntries,
-		YearNavs: yearNavs,
-		CSS:      template.CSS(s.css),
+		Title:      s.cfg.General.Title,
+		Entries:    templateEntries,
+		YearNavs:   yearNavs,
+		CSS:        template.CSS(s.css),
+		LiveReload: s.liveReload,
 	}
 
 	if err := s.tmpl.ExecuteTemplate(w, "index.html", data); err != nil {
@@ -345,10 +413,11 @@ type YearNav struct {
 
 // IndexData represents data for the index template
 type IndexData struct {
-	Title    string
-	Entries  []TemplateEntry
-	YearNavs []YearNav
-	CSS      template.CSS
+	Title      string
+	Entries    []TemplateEntry
+	YearNavs   []YearNav
+	CSS        template.CSS
+	LiveReload bool
 }
 
 // Builder generates static HTML files
