@@ -11,6 +11,7 @@ Usage:
   jnal [command]
 
 Available Commands:
+  build       Build static HTML files
   completion  Generate the autocompletion script for the specified shell
   help        Help about any command
   init        Initialize jnal configuration
