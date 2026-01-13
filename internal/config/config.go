@@ -125,9 +125,7 @@ func (c *CommonConfig) SetDefaults() {
 
 // SetDefaults sets default values for the new configuration
 func (n *NewConfig) SetDefaults() {
-	if n.FileTemplate == "" {
-		n.FileTemplate = "# {{ .Date }}\n"
-	}
+	// file_template has no default - empty means create an empty file
 }
 
 // SetDefaults sets default values for the build configuration
