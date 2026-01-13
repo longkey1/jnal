@@ -26,32 +26,46 @@ const (
 
 // Config represents the application configuration
 type Config struct {
-	General GeneralConfig `mapstructure:"general"`
-	Serve   ServeConfig   `mapstructure:"serve"`
+	Common CommonConfig `mapstructure:"common"`
+	New    NewConfig    `mapstructure:"new"`
+	Build  BuildConfig  `mapstructure:"build"`
+	Serve  ServeConfig  `mapstructure:"serve"`
 }
 
-// GeneralConfig represents the general configuration
-type GeneralConfig struct {
+// CommonConfig represents common configuration shared across commands
+type CommonConfig struct {
 	BaseDirectory string `mapstructure:"base_directory"`
 	DateFormat    string `mapstructure:"date_format"`
 	PathFormat    string `mapstructure:"path_format"`
-	FileTemplate  string `mapstructure:"file_template"`
-	Title         string `mapstructure:"title"`
-	Sort          string `mapstructure:"sort"`
-	CSS           string `mapstructure:"css"`
-	HeadingShift  *int   `mapstructure:"heading_shift"`
-	HardWraps     *bool  `mapstructure:"hard_wraps"`
 }
 
-// ServeConfig represents the serve command configuration
+// NewConfig represents the new command configuration
+type NewConfig struct {
+	FileTemplate string `mapstructure:"file_template"`
+}
+
+// BuildConfig represents the build command configuration (HTML content generation)
+type BuildConfig struct {
+	Title        string `mapstructure:"title"`
+	Sort         string `mapstructure:"sort"`
+	CSS          string `mapstructure:"css"`
+	HeadingShift *int   `mapstructure:"heading_shift"`
+	HardWraps    *bool  `mapstructure:"hard_wraps"`
+}
+
+// ServeConfig represents the serve command configuration (content delivery)
 type ServeConfig struct {
 	Port int `mapstructure:"port"`
 }
 
 // Validate validates the configuration
 func (c *Config) Validate() error {
-	if err := c.General.Validate(); err != nil {
-		return fmt.Errorf("general config: %w", err)
+	if err := c.Common.Validate(); err != nil {
+		return fmt.Errorf("common config: %w", err)
+	}
+
+	if err := c.Build.Validate(); err != nil {
+		return fmt.Errorf("build config: %w", err)
 	}
 
 	if err := c.Serve.Validate(); err != nil {
@@ -61,15 +75,20 @@ func (c *Config) Validate() error {
 	return nil
 }
 
-// Validate validates the general configuration
-func (g *GeneralConfig) Validate() error {
-	if g.BaseDirectory == "" {
+// Validate validates the common configuration
+func (c *CommonConfig) Validate() error {
+	if c.BaseDirectory == "" {
 		return fmt.Errorf("base_directory is required")
 	}
 
+	return nil
+}
+
+// Validate validates the build configuration
+func (b *BuildConfig) Validate() error {
 	validSorts := map[string]bool{SortDesc: true, SortAsc: true}
-	if g.Sort != "" && !validSorts[g.Sort] {
-		return fmt.Errorf("invalid sort: %s (must be one of: desc, asc)", g.Sort)
+	if b.Sort != "" && !validSorts[b.Sort] {
+		return fmt.Errorf("invalid sort: %s (must be one of: desc, asc)", b.Sort)
 	}
 
 	return nil
@@ -86,51 +105,61 @@ func (s *ServeConfig) Validate() error {
 
 // SetDefaults sets default values for the configuration
 func (c *Config) SetDefaults() {
-	c.General.SetDefaults()
+	c.Common.SetDefaults()
+	c.New.SetDefaults()
+	c.Build.SetDefaults()
 	c.Serve.SetDefaults()
 }
 
-// SetDefaults sets default values for the general configuration
-func (g *GeneralConfig) SetDefaults() {
-	if g.DateFormat == "" {
-		g.DateFormat = "2006-01-02"
+// SetDefaults sets default values for the common configuration
+func (c *CommonConfig) SetDefaults() {
+	if c.DateFormat == "" {
+		c.DateFormat = "2006-01-02"
 	}
-	if g.PathFormat == "" {
-		g.PathFormat = "2006-01-02.md"
+	if c.PathFormat == "" {
+		c.PathFormat = "2006-01-02.md"
 	}
-	if g.FileTemplate == "" {
-		g.FileTemplate = "# {{ .Date }}\n"
+}
+
+// SetDefaults sets default values for the new configuration
+func (n *NewConfig) SetDefaults() {
+	if n.FileTemplate == "" {
+		n.FileTemplate = "# {{ .Date }}\n"
 	}
-	if g.Title == "" {
-		g.Title = "Journal"
+}
+
+// SetDefaults sets default values for the build configuration
+func (b *BuildConfig) SetDefaults() {
+	if b.Title == "" {
+		b.Title = "Journal"
 	}
-	if g.Sort == "" {
-		g.Sort = DefaultSort
+	if b.Sort == "" {
+		b.Sort = DefaultSort
 	}
-	if g.HeadingShift == nil {
+	if b.HeadingShift == nil {
 		defaultShift := DefaultHeadingShift
-		g.HeadingShift = &defaultShift
+		b.HeadingShift = &defaultShift
 	}
-	if g.HardWraps == nil {
+	if b.HardWraps == nil {
 		defaultHardWraps := true
-		g.HardWraps = &defaultHardWraps
+		b.HardWraps = &defaultHardWraps
 	}
 }
 
 // GetHeadingShift returns the heading shift value (0 means disabled)
-func (g *GeneralConfig) GetHeadingShift() int {
-	if g.HeadingShift == nil {
+func (b *BuildConfig) GetHeadingShift() int {
+	if b.HeadingShift == nil {
 		return DefaultHeadingShift
 	}
-	return *g.HeadingShift
+	return *b.HeadingShift
 }
 
 // GetHardWraps returns the hard wraps setting (default: true)
-func (g *GeneralConfig) GetHardWraps() bool {
-	if g.HardWraps == nil {
+func (b *BuildConfig) GetHardWraps() bool {
+	if b.HardWraps == nil {
 		return true
 	}
-	return *g.HardWraps
+	return *b.HardWraps
 }
 
 // SetDefaults sets default values for the serve configuration

@@ -82,14 +82,14 @@ func New(cfg *config.Config, jnl *journal.Journal, baseDir string, liveReload bo
 	}
 
 	// Load CSS
-	css, err := loadCSS(cfg.General.CSS)
+	css, err := loadCSS(cfg.Build.CSS)
 	if err != nil {
 		return nil, fmt.Errorf("loading css: %w", err)
 	}
 
 	// Configure goldmark
 	md := goldmark.New()
-	if cfg.General.GetHardWraps() {
+	if cfg.Build.GetHardWraps() {
 		md = goldmark.New(
 			goldmark.WithRendererOptions(
 				html.WithHardWraps(),
@@ -187,7 +187,7 @@ func (s *Server) reloadEntries() error {
 	}
 
 	// Sort entries based on configuration
-	switch s.cfg.General.Sort {
+	switch s.cfg.Build.Sort {
 	case config.SortAsc:
 		entries.SortByDateAsc()
 	default:
@@ -222,7 +222,7 @@ func (s *Server) loadEntryContent(path string) (string, error) {
 		return "", err
 	}
 
-	shift := s.cfg.General.GetHeadingShift()
+	shift := s.cfg.Build.GetHeadingShift()
 	if shift > 0 {
 		return shiftHeadings(buf.String(), shift), nil
 	}
@@ -370,7 +370,7 @@ func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 	templateEntries, yearNavs := convertToTemplateEntries(entries)
 
 	data := IndexData{
-		Title:      s.cfg.General.Title,
+		Title:      s.cfg.Build.Title,
 		Entries:    templateEntries,
 		YearNavs:   yearNavs,
 		CSS:        template.CSS(s.css),
@@ -460,14 +460,14 @@ func NewBuilder(cfg *config.Config, jnl *journal.Journal, baseDir string) (*Buil
 		return nil, fmt.Errorf("parsing templates: %w", err)
 	}
 
-	css, err := loadCSS(cfg.General.CSS)
+	css, err := loadCSS(cfg.Build.CSS)
 	if err != nil {
 		return nil, fmt.Errorf("loading css: %w", err)
 	}
 
 	// Configure goldmark
 	md := goldmark.New()
-	if cfg.General.GetHardWraps() {
+	if cfg.Build.GetHardWraps() {
 		md = goldmark.New(
 			goldmark.WithRendererOptions(
 				html.WithHardWraps(),
@@ -499,7 +499,7 @@ func (b *Builder) Build(outputDir string) error {
 	}
 
 	// Sort entries
-	switch b.cfg.General.Sort {
+	switch b.cfg.Build.Sort {
 	case config.SortAsc:
 		entries.SortByDateAsc()
 	default:
@@ -520,7 +520,7 @@ func (b *Builder) Build(outputDir string) error {
 
 	// Generate index.html
 	indexData := IndexData{
-		Title:    b.cfg.General.Title,
+		Title:    b.cfg.Build.Title,
 		Entries:  templateEntries,
 		YearNavs: yearNavs,
 		CSS:      template.CSS(b.css),
@@ -552,7 +552,7 @@ func (b *Builder) loadEntryContent(path string) (string, error) {
 		return "", err
 	}
 
-	shift := b.cfg.General.GetHeadingShift()
+	shift := b.cfg.Build.GetHeadingShift()
 	if shift > 0 {
 		return shiftHeadings(buf.String(), shift), nil
 	}

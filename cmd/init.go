@@ -13,11 +13,15 @@ var initForce bool
 
 const defaultConfigTemplate = `# jnal configuration file
 
-[general]
+[common]
 base_directory = "%s"
 date_format = "2006-01-02"
 path_format = "2006-01-02.md"
+
+[new]
 file_template = "# {{ .Date }}\n"
+
+[build]
 title = "Journal"
 sort = "desc"
 # heading_shift = 4  # Shift heading levels in HTML output (0 to disable)

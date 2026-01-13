@@ -14,7 +14,7 @@ var buildCmd = &cobra.Command{
 	Short: "Build static HTML files",
 	Long:  `Generate static HTML files from journal entries.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		builder, err := server.NewBuilder(cfg, jnl, cfg.General.BaseDirectory)
+		builder, err := server.NewBuilder(cfg, jnl, cfg.Common.BaseDirectory)
 		if err != nil {
 			return fmt.Errorf("creating builder: %w", err)
 		}

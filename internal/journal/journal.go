@@ -22,13 +22,13 @@ func New(cfg *config.Config) *Journal {
 
 // GetEntryPath returns the file path for a journal entry on the given date
 func (j *Journal) GetEntryPath(date time.Time) string {
-	relativePath := date.Format(j.cfg.General.PathFormat)
-	return filepath.Join(j.cfg.General.BaseDirectory, relativePath)
+	relativePath := date.Format(j.cfg.Common.PathFormat)
+	return filepath.Join(j.cfg.Common.BaseDirectory, relativePath)
 }
 
 // GetBaseDir returns the base directory path
 func (j *Journal) GetBaseDir() string {
-	return j.cfg.General.BaseDirectory
+	return j.cfg.Common.BaseDirectory
 }
 
 // EntryExists checks if a journal entry exists for the given date
@@ -79,7 +79,7 @@ func (j *Journal) CreateEntry(date time.Time) (string, error) {
 func (j *Journal) ListEntries() (Entries, error) {
 	var entries Entries
 
-	err := filepath.Walk(j.cfg.General.BaseDirectory, func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(j.cfg.Common.BaseDirectory, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -109,7 +109,7 @@ func (j *Journal) ListEntries() (Entries, error) {
 	})
 
 	if err != nil {
-		return nil, fmt.Errorf("walking directory %s: %w", j.cfg.General.BaseDirectory, err)
+		return nil, fmt.Errorf("walking directory %s: %w", j.cfg.Common.BaseDirectory, err)
 	}
 
 	return entries, nil
@@ -118,9 +118,9 @@ func (j *Journal) ListEntries() (Entries, error) {
 
 // buildEntryContent builds the initial content for a new entry
 func (j *Journal) buildEntryContent(date time.Time) (string, error) {
-	dateStr := date.Format(j.cfg.General.DateFormat)
+	dateStr := date.Format(j.cfg.Common.DateFormat)
 
-	return j.executeTemplate(j.cfg.General.FileTemplate, map[string]interface{}{
+	return j.executeTemplate(j.cfg.New.FileTemplate, map[string]interface{}{
 		"Date": dateStr,
 		"Env":  getEnvMap(),
 	})

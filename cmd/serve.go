@@ -29,7 +29,7 @@ The server watches for file changes and automatically reloads content.`,
 			cfg.Serve.Port = servePort
 		}
 		if cmd.Flags().Changed("sort") {
-			cfg.General.Sort = serveSort
+			cfg.Build.Sort = serveSort
 		}
 
 		// Validate config
@@ -37,7 +37,7 @@ The server watches for file changes and automatically reloads content.`,
 			return fmt.Errorf("invalid config: %w", err)
 		}
 
-		srv, err := server.New(cfg, jnl, cfg.General.BaseDirectory, serveLiveReload)
+		srv, err := server.New(cfg, jnl, cfg.Common.BaseDirectory, serveLiveReload)
 		if err != nil {
 			return fmt.Errorf("creating server: %w", err)
 		}

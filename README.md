@@ -71,7 +71,7 @@ jnal serve
 `css` can be a URL (downloaded at startup) or inline CSS:
 
 ```toml
-[general]
+[build]
 # URL (classless CSS frameworks work great)
 css = "https://cdn.jsdelivr.net/npm/water.css@2/out/water.css"
 
@@ -100,7 +100,7 @@ When rendering multiple journal entries on a single page, headings are shifted t
 By default, `heading_shift = 4`. Set to `0` to disable and output entry content as-is:
 
 ```toml
-[general]
+[build]
 heading_shift = 0  # Disable heading shift
 ```
 
@@ -109,11 +109,15 @@ heading_shift = 0  # Disable heading shift
 ```toml
 # $HOME/.config/jnal/config.toml
 
-[general]
+[common]
 base_directory = "/home/user/journal"
 date_format = "2006-01-02"
 path_format = "2006/2006-01-02.md"
+
+[new]
 file_template = "# {{ .Date }}\n"
+
+[build]
 title = "My Journal"
 sort = "desc"
 css = "https://cdn.jsdelivr.net/npm/water.css@2/out/water.css"
