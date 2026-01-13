@@ -19,6 +19,8 @@ import (
 	"github.com/longkey1/jnal/internal/config"
 	"github.com/longkey1/jnal/internal/journal"
 	"github.com/yuin/goldmark"
+	"github.com/yuin/goldmark/extension"
+	"github.com/yuin/goldmark/renderer"
 	"github.com/yuin/goldmark/renderer/html"
 )
 
@@ -58,11 +60,12 @@ article blockquote { border-left: 4px solid #ddd; margin: 0; padding-left: 20px;
 
 // Server represents the journal preview server
 type Server struct {
-	cfg        *config.Config
-	journal    *journal.Journal
-	baseDir    string
-	css        string
-	liveReload bool
+	cfg             *config.Config
+	journal         *journal.Journal
+	baseDir         string
+	css             string
+	liveReload      bool
+	linkTargetBlank bool
 
 	mu      sync.RWMutex
 	entries journal.Entries
@@ -88,24 +91,29 @@ func New(cfg *config.Config, jnl *journal.Journal, baseDir string, liveReload bo
 	}
 
 	// Configure goldmark
-	md := goldmark.New()
+	var opts []goldmark.Option
+	var rendererOpts []renderer.Option
 	if cfg.Build.GetHardWraps() {
-		md = goldmark.New(
-			goldmark.WithRendererOptions(
-				html.WithHardWraps(),
-			),
-		)
+		rendererOpts = append(rendererOpts, html.WithHardWraps())
 	}
+	if len(rendererOpts) > 0 {
+		opts = append(opts, goldmark.WithRendererOptions(rendererOpts...))
+	}
+	if cfg.Build.GetLinkify() {
+		opts = append(opts, goldmark.WithExtensions(extension.Linkify))
+	}
+	md := goldmark.New(opts...)
 
 	return &Server{
-		cfg:        cfg,
-		journal:    jnl,
-		baseDir:    baseDir,
-		css:        css,
-		liveReload: liveReload,
-		tmpl:       tmpl,
-		md:         md,
-		sseClients: make(map[chan struct{}]struct{}),
+		cfg:             cfg,
+		journal:         jnl,
+		baseDir:         baseDir,
+		css:             css,
+		liveReload:      liveReload,
+		linkTargetBlank: cfg.Build.GetLinkTargetBlank(),
+		tmpl:            tmpl,
+		md:              md,
+		sseClients:      make(map[chan struct{}]struct{}),
 	}, nil
 }
 
@@ -222,11 +230,17 @@ func (s *Server) loadEntryContent(path string) (string, error) {
 		return "", err
 	}
 
+	result := buf.String()
+
+	if s.linkTargetBlank {
+		result = addTargetBlankToLinks(result)
+	}
+
 	shift := s.cfg.Build.GetHeadingShift()
 	if shift > 0 {
-		return shiftHeadings(buf.String(), shift), nil
+		result = shiftHeadings(result, shift)
 	}
-	return buf.String(), nil
+	return result, nil
 }
 
 // shiftHeadings shifts HTML heading levels by the specified amount
@@ -246,6 +260,12 @@ func shiftHeadings(html string, shift int) string {
 		html = strings.ReplaceAll(html, fmt.Sprintf("</h%d>", level), fmt.Sprintf("</h%d>", newLevel))
 	}
 	return html
+}
+
+// addTargetBlankToLinks adds target="_blank" and rel="noopener noreferrer" to all links
+func addTargetBlankToLinks(html string) string {
+	re := regexp.MustCompile(`<a\s+href=`)
+	return re.ReplaceAllString(html, `<a target="_blank" rel="noopener noreferrer" href=`)
 }
 
 // watchFiles watches for file changes and reloads entries
@@ -445,12 +465,13 @@ type IndexData struct {
 
 // Builder generates static HTML files
 type Builder struct {
-	cfg     *config.Config
-	journal *journal.Journal
-	baseDir string
-	css     string
-	tmpl    *template.Template
-	md      goldmark.Markdown
+	cfg             *config.Config
+	journal         *journal.Journal
+	baseDir         string
+	css             string
+	linkTargetBlank bool
+	tmpl            *template.Template
+	md              goldmark.Markdown
 }
 
 // NewBuilder creates a new Builder instance
@@ -466,22 +487,27 @@ func NewBuilder(cfg *config.Config, jnl *journal.Journal, baseDir string) (*Buil
 	}
 
 	// Configure goldmark
-	md := goldmark.New()
+	var opts []goldmark.Option
+	var rendererOpts []renderer.Option
 	if cfg.Build.GetHardWraps() {
-		md = goldmark.New(
-			goldmark.WithRendererOptions(
-				html.WithHardWraps(),
-			),
-		)
+		rendererOpts = append(rendererOpts, html.WithHardWraps())
 	}
+	if len(rendererOpts) > 0 {
+		opts = append(opts, goldmark.WithRendererOptions(rendererOpts...))
+	}
+	if cfg.Build.GetLinkify() {
+		opts = append(opts, goldmark.WithExtensions(extension.Linkify))
+	}
+	md := goldmark.New(opts...)
 
 	return &Builder{
-		cfg:     cfg,
-		journal: jnl,
-		baseDir: baseDir,
-		css:     css,
-		tmpl:    tmpl,
-		md:      md,
+		cfg:             cfg,
+		journal:         jnl,
+		baseDir:         baseDir,
+		css:             css,
+		linkTargetBlank: cfg.Build.GetLinkTargetBlank(),
+		tmpl:            tmpl,
+		md:              md,
 	}, nil
 }
 
@@ -552,9 +578,15 @@ func (b *Builder) loadEntryContent(path string) (string, error) {
 		return "", err
 	}
 
+	result := buf.String()
+
+	if b.linkTargetBlank {
+		result = addTargetBlankToLinks(result)
+	}
+
 	shift := b.cfg.Build.GetHeadingShift()
 	if shift > 0 {
-		return shiftHeadings(buf.String(), shift), nil
+		result = shiftHeadings(result, shift)
 	}
-	return buf.String(), nil
+	return result, nil
 }

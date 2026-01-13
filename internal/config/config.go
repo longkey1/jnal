@@ -46,11 +46,13 @@ type NewConfig struct {
 
 // BuildConfig represents the build command configuration (HTML content generation)
 type BuildConfig struct {
-	Title        string `mapstructure:"title"`
-	Sort         string `mapstructure:"sort"`
-	CSS          string `mapstructure:"css"`
-	HeadingShift *int   `mapstructure:"heading_shift"`
-	HardWraps    *bool  `mapstructure:"hard_wraps"`
+	Title           string `mapstructure:"title"`
+	Sort            string `mapstructure:"sort"`
+	CSS             string `mapstructure:"css"`
+	HeadingShift    *int   `mapstructure:"heading_shift"`
+	HardWraps       *bool  `mapstructure:"hard_wraps"`
+	Linkify         *bool  `mapstructure:"linkify"`
+	LinkTargetBlank *bool  `mapstructure:"link_target_blank"`
 }
 
 // ServeConfig represents the serve command configuration (content delivery)
@@ -144,6 +146,14 @@ func (b *BuildConfig) SetDefaults() {
 		defaultHardWraps := true
 		b.HardWraps = &defaultHardWraps
 	}
+	if b.Linkify == nil {
+		defaultLinkify := true
+		b.Linkify = &defaultLinkify
+	}
+	if b.LinkTargetBlank == nil {
+		defaultLinkTargetBlank := true
+		b.LinkTargetBlank = &defaultLinkTargetBlank
+	}
 }
 
 // GetHeadingShift returns the heading shift value (0 means disabled)
@@ -160,6 +170,22 @@ func (b *BuildConfig) GetHardWraps() bool {
 		return true
 	}
 	return *b.HardWraps
+}
+
+// GetLinkify returns the linkify setting (default: true)
+func (b *BuildConfig) GetLinkify() bool {
+	if b.Linkify == nil {
+		return true
+	}
+	return *b.Linkify
+}
+
+// GetLinkTargetBlank returns the link_target_blank setting (default: true)
+func (b *BuildConfig) GetLinkTargetBlank() bool {
+	if b.LinkTargetBlank == nil {
+		return true
+	}
+	return *b.LinkTargetBlank
 }
 
 // SetDefaults sets default values for the serve configuration
