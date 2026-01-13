@@ -40,6 +40,7 @@ type GeneralConfig struct {
 	Sort          string `mapstructure:"sort"`
 	CSS           string `mapstructure:"css"`
 	HeadingShift  *int   `mapstructure:"heading_shift"`
+	HardWraps     *bool  `mapstructure:"hard_wraps"`
 }
 
 // ServeConfig represents the serve command configuration
@@ -110,6 +111,10 @@ func (g *GeneralConfig) SetDefaults() {
 		defaultShift := DefaultHeadingShift
 		g.HeadingShift = &defaultShift
 	}
+	if g.HardWraps == nil {
+		defaultHardWraps := true
+		g.HardWraps = &defaultHardWraps
+	}
 }
 
 // GetHeadingShift returns the heading shift value (0 means disabled)
@@ -118,6 +123,14 @@ func (g *GeneralConfig) GetHeadingShift() int {
 		return DefaultHeadingShift
 	}
 	return *g.HeadingShift
+}
+
+// GetHardWraps returns the hard wraps setting (default: true)
+func (g *GeneralConfig) GetHardWraps() bool {
+	if g.HardWraps == nil {
+		return true
+	}
+	return *g.HardWraps
 }
 
 // SetDefaults sets default values for the serve configuration

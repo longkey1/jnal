@@ -19,6 +19,7 @@ import (
 	"github.com/longkey1/jnal/internal/config"
 	"github.com/longkey1/jnal/internal/journal"
 	"github.com/yuin/goldmark"
+	"github.com/yuin/goldmark/renderer/html"
 )
 
 //go:embed templates/*.html
@@ -86,6 +87,16 @@ func New(cfg *config.Config, jnl *journal.Journal, baseDir string, liveReload bo
 		return nil, fmt.Errorf("loading css: %w", err)
 	}
 
+	// Configure goldmark
+	md := goldmark.New()
+	if cfg.General.GetHardWraps() {
+		md = goldmark.New(
+			goldmark.WithRendererOptions(
+				html.WithHardWraps(),
+			),
+		)
+	}
+
 	return &Server{
 		cfg:        cfg,
 		journal:    jnl,
@@ -93,7 +104,7 @@ func New(cfg *config.Config, jnl *journal.Journal, baseDir string, liveReload bo
 		css:        css,
 		liveReload: liveReload,
 		tmpl:       tmpl,
-		md:         goldmark.New(),
+		md:         md,
 		sseClients: make(map[chan struct{}]struct{}),
 	}, nil
 }
@@ -454,13 +465,23 @@ func NewBuilder(cfg *config.Config, jnl *journal.Journal, baseDir string) (*Buil
 		return nil, fmt.Errorf("loading css: %w", err)
 	}
 
+	// Configure goldmark
+	md := goldmark.New()
+	if cfg.General.GetHardWraps() {
+		md = goldmark.New(
+			goldmark.WithRendererOptions(
+				html.WithHardWraps(),
+			),
+		)
+	}
+
 	return &Builder{
 		cfg:     cfg,
 		journal: jnl,
 		baseDir: baseDir,
 		css:     css,
 		tmpl:    tmpl,
-		md:      goldmark.New(),
+		md:      md,
 	}, nil
 }
 
