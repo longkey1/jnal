@@ -43,6 +43,8 @@ h1 { border-bottom: 2px solid #333; padding-bottom: 10px; }
 a { color: #007acc; text-decoration: none; }
 a:hover { text-decoration: underline; }
 nav { border-bottom: 1px solid #ddd; margin-bottom: 20px; }
+h2 { font-size: 1.5em; margin: 1.5em 0 0.5em; }
+h3 { font-size: 1.35em; margin: 1.2em 0 0.4em; }
 article {
     background: white;
     padding: 20px;
@@ -50,7 +52,9 @@ article {
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     margin-bottom: 20px;
 }
-article h4 { margin-top: 0; }
+article h4 { margin-top: 0; font-size: 1.2em; }
+.content h5 { font-size: 1.1em; margin: 1.2em 0 0.6em; }
+.content h6 { font-size: 1em; margin: 1em 0 0.5em; }
 article pre, article code { background: #f4f4f4; }
 article pre { padding: 15px; border-radius: 5px; overflow-x: auto; }
 article code { padding: 2px 6px; border-radius: 3px; }
