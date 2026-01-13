@@ -104,6 +104,16 @@ By default, `heading_shift = 4`. Set to `0` to disable and output entry content 
 heading_shift = 0  # Disable heading shift
 ```
 
+### Auto-linking URLs
+
+URLs in journal entries are automatically converted to clickable links. By default, all links open in a new tab with `target="_blank"` and `rel="noopener noreferrer"` for security.
+
+```toml
+[build]
+linkify = true           # Auto-convert URLs to links (default: true)
+link_target_blank = true # Open links in new tab (default: true)
+```
+
 ### Sample Configuration
 
 ```toml
