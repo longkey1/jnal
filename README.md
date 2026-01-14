@@ -21,7 +21,7 @@ Available Commands:
   version     Show version information
 
 Flags:
-      --config string   config file (default is $HOME/.config/jnal/config.toml)
+      --config string   config file (default is $JNAL_CONFIG or $HOME/.config/jnal/config.toml)
   -h, --help            help for jnal
 
 Use "jnal [command] --help" for more information about a command.
@@ -51,6 +51,10 @@ jnal serve
 ```
 
 ## Configuration
+
+### Environment Variables
+
+- `JNAL_CONFIG` - Path to config file (overrides default `$HOME/.config/jnal/config.toml`)
 
 ### Path Format
 
@@ -186,3 +190,15 @@ Initialize configuration file:
 jnal init           # Create default config
 jnal init --force   # Overwrite existing config
 ```
+
+## Docker
+
+A Docker image is available for running jnal in containers:
+
+```bash
+docker run -v /path/to/journal:/app -v /path/to/config.toml:/app/config.toml ghcr.io/longkey1/jnal build
+```
+
+The image uses `/app` as the working directory and expects:
+- Journal files mounted at `/app` (or configured `base_directory`)
+- Config file at `/app/config.toml` (via `JNAL_CONFIG` environment variable)

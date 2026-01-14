@@ -24,8 +24,14 @@ var rootCmd = &cobra.Command{
 			return nil
 		}
 
+		// Use JNAL_CONFIG environment variable if --config flag is not set
+		configPath := cfgFile
+		if configPath == "" {
+			configPath = os.Getenv("JNAL_CONFIG")
+		}
+
 		var err error
-		cfg, err = config.Load(cfgFile)
+		cfg, err = config.Load(configPath)
 		if err != nil {
 			return fmt.Errorf("loading config: %w", err)
 		}
@@ -43,7 +49,7 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/jnal/config.toml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $JNAL_CONFIG or $HOME/.config/jnal/config.toml)")
 }
 
 // GetConfig returns the loaded configuration
