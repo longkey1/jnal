@@ -15,15 +15,16 @@ limitations under the License.
 */
 package main
 
-import "github.com/longkey1/jnal/cmd"
+import (
+	"os"
 
-var (
-	version = "dev"
-	commit  = "none"
-	date    = "unknown"
+	"github.com/longkey1/jnal/cmd"
 )
 
 func main() {
-	cmd.SetVersionInfo(version, commit, date)
-	cmd.Execute()
+	rootCmd := cmd.NewRootCommand()
+
+	if err := rootCmd.Execute(); err != nil {
+		os.Exit(1)
+	}
 }

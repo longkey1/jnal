@@ -9,8 +9,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var initForce bool
-
 const defaultConfigTemplate = `# jnal configuration file
 
 [common]
@@ -31,49 +29,51 @@ sort = "desc"
 port = 8080
 `
 
-var initCmd = &cobra.Command{
-	Use:   "init",
-	Short: "Initialize jnal configuration",
-	Long:  `Create a default configuration file at ~/.config/jnal/config.toml`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		configPath, err := config.DefaultConfigPath()
-		if err != nil {
-			return fmt.Errorf("getting config path: %w", err)
-		}
+func newInitCommand() *cobra.Command {
+	var force bool
 
-		// Check if config already exists
-		if _, err := os.Stat(configPath); err == nil && !initForce {
-			return fmt.Errorf("config file already exists at %s (use --force to overwrite)", configPath)
-		}
+	cmd := &cobra.Command{
+		Use:   "init",
+		Short: "Initialize jnal configuration",
+		Long:  `Create a default configuration file at ~/.config/jnal/config.toml`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			configPath, err := config.DefaultConfigPath()
+			if err != nil {
+				return fmt.Errorf("getting config path: %w", err)
+			}
 
-		// Create config directory if it doesn't exist
-		configDir := filepath.Dir(configPath)
-		if err := os.MkdirAll(configDir, config.DirPermission); err != nil {
-			return fmt.Errorf("creating config directory: %w", err)
-		}
+			// Check if config already exists
+			if _, err := os.Stat(configPath); err == nil && !force {
+				return fmt.Errorf("config file already exists at %s (use --force to overwrite)", configPath)
+			}
 
-		// Get default journal directory
-		homeDir, err := os.UserHomeDir()
-		if err != nil {
-			return fmt.Errorf("getting home directory: %w", err)
-		}
-		defaultJournalDir := filepath.Join(homeDir, "journal")
+			// Create config directory if it doesn't exist
+			configDir := filepath.Dir(configPath)
+			if err := os.MkdirAll(configDir, config.DirPermission); err != nil {
+				return fmt.Errorf("creating config directory: %w", err)
+			}
 
-		// Write config file
-		content := fmt.Sprintf(defaultConfigTemplate, defaultJournalDir)
-		if err := os.WriteFile(configPath, []byte(content), config.FilePermission); err != nil {
-			return fmt.Errorf("writing config file: %w", err)
-		}
+			// Get default journal directory
+			homeDir, err := os.UserHomeDir()
+			if err != nil {
+				return fmt.Errorf("getting home directory: %w", err)
+			}
+			defaultJournalDir := filepath.Join(homeDir, "journal")
 
-		fmt.Printf("Created config file at %s\n", configPath)
-		fmt.Printf("Edit the file to customize your journal settings.\n")
+			// Write config file
+			content := fmt.Sprintf(defaultConfigTemplate, defaultJournalDir)
+			if err := os.WriteFile(configPath, []byte(content), config.FilePermission); err != nil {
+				return fmt.Errorf("writing config file: %w", err)
+			}
 
-		return nil
-	},
-}
+			fmt.Printf("Created config file at %s\n", configPath)
+			fmt.Printf("Edit the file to customize your journal settings.\n")
 
-func init() {
-	rootCmd.AddCommand(initCmd)
+			return nil
+		},
+	}
 
-	initCmd.Flags().BoolVarP(&initForce, "force", "f", false, "Overwrite existing config file")
+	cmd.Flags().BoolVarP(&force, "force", "f", false, "Overwrite existing config file")
+
+	return cmd
 }

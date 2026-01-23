@@ -142,8 +142,9 @@ func TestConfig_SetDefaults(t *testing.T) {
 	if cfg.Common.DateFormat != "2006-01-02" {
 		t.Errorf("Common.DateFormat = %v, want 2006-01-02", cfg.Common.DateFormat)
 	}
-	if cfg.New.FileTemplate != "# {{ .Date }}\n" {
-		t.Errorf("New.FileTemplate = %v, want # {{ .Date }}\\n", cfg.New.FileTemplate)
+	// FileTemplate has no default - empty means create an empty file
+	if cfg.New.FileTemplate != "" {
+		t.Errorf("New.FileTemplate = %v, want empty string", cfg.New.FileTemplate)
 	}
 	if cfg.Build.Sort != DefaultSort {
 		t.Errorf("Build.Sort = %v, want %v", cfg.Build.Sort, DefaultSort)

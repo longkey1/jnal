@@ -3,10 +3,19 @@
 ROOT := $(patsubst %/,%,$(dir $(realpath $(firstword $(MAKEFILE_LIST)))))
 DIST := $(ROOT)/dist
 
+# Build variables
+VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
+COMMIT := $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+BUILD_TIME := $(shell date -u '+%Y-%m-%d_%H:%M:%S')
+LDFLAGS := -s -w \
+	-X github.com/longkey1/jnal/internal/version.Version=$(VERSION) \
+	-X github.com/longkey1/jnal/internal/version.CommitSHA=$(COMMIT) \
+	-X github.com/longkey1/jnal/internal/version.BuildTime=$(BUILD_TIME)
+
 .PHONY: build
 build: ## Build binary to dist/
 	@mkdir -p $(DIST)
-	go build -o $(DIST)/jnal .
+	go build -ldflags "$(LDFLAGS)" -o $(DIST)/jnal .
 
 .PHONY: tools
 tools: ## Install tools

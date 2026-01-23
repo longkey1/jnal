@@ -1,13 +1,16 @@
-package journal
+package jnal
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
+	"text/template"
 	"time"
 
 	"github.com/longkey1/jnal/internal/config"
-	"github.com/longkey1/jnal/internal/dateutil"
+	"github.com/longkey1/jnal/internal/util"
 )
 
 // Journal manages journal entries
@@ -15,8 +18,8 @@ type Journal struct {
 	cfg *config.Config
 }
 
-// New creates a new Journal instance
-func New(cfg *config.Config) *Journal {
+// NewJournal creates a new Journal instance
+func NewJournal(cfg *config.Config) *Journal {
 	return &Journal{cfg: cfg}
 }
 
@@ -94,7 +97,7 @@ func (j *Journal) ListEntries() (Entries, error) {
 		}
 
 		// Extract date from filename
-		date, err := dateutil.ExtractFromFilename(info.Name())
+		date, err := util.ExtractFromFilename(info.Name())
 		if err != nil {
 			// Skip files without valid date in filename
 			return nil
@@ -124,4 +127,31 @@ func (j *Journal) buildEntryContent(date time.Time) (string, error) {
 		"Date": dateStr,
 		"Env":  getEnvMap(),
 	})
+}
+
+// executeTemplate executes a template string with the given data
+func (j *Journal) executeTemplate(tpl string, data map[string]interface{}) (string, error) {
+	t, err := template.New("").Parse(tpl)
+	if err != nil {
+		return "", fmt.Errorf("parsing template: %w", err)
+	}
+
+	buf := new(bytes.Buffer)
+	if err := t.Execute(buf, data); err != nil {
+		return "", fmt.Errorf("executing template: %w", err)
+	}
+
+	return buf.String(), nil
+}
+
+// getEnvMap returns a map of all environment variables
+func getEnvMap() map[string]string {
+	envMap := make(map[string]string)
+	for _, env := range os.Environ() {
+		key, value, found := strings.Cut(env, "=")
+		if found {
+			envMap[key] = value
+		}
+	}
+	return envMap
 }

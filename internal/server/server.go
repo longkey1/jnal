@@ -17,7 +17,7 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/longkey1/jnal/internal/config"
-	"github.com/longkey1/jnal/internal/journal"
+	"github.com/longkey1/jnal/internal/jnal"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/renderer"
@@ -65,14 +65,14 @@ article blockquote { border-left: 4px solid #ddd; margin: 0; padding-left: 20px;
 // Server represents the journal preview server
 type Server struct {
 	cfg             *config.Config
-	journal         *journal.Journal
+	journal         *jnal.Journal
 	baseDir         string
 	css             string
 	liveReload      bool
 	linkTargetBlank bool
 
 	mu      sync.RWMutex
-	entries journal.Entries
+	entries jnal.Entries
 	tmpl    *template.Template
 	md      goldmark.Markdown
 
@@ -82,7 +82,7 @@ type Server struct {
 }
 
 // New creates a new Server instance
-func New(cfg *config.Config, jnl *journal.Journal, baseDir string, liveReload bool) (*Server, error) {
+func New(cfg *config.Config, jnl *jnal.Journal, baseDir string, liveReload bool) (*Server, error) {
 	tmpl, err := template.ParseFS(templatesFS, "templates/*.html")
 	if err != nil {
 		return nil, fmt.Errorf("parsing templates: %w", err)
@@ -407,7 +407,7 @@ func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 }
 
 // convertToTemplateEntries converts journal entries to template entries with year/month markers
-func convertToTemplateEntries(entries journal.Entries) ([]TemplateEntry, []YearNav) {
+func convertToTemplateEntries(entries jnal.Entries) ([]TemplateEntry, []YearNav) {
 	templateEntries := make([]TemplateEntry, len(entries))
 	yearNavs := []YearNav{}
 	lastYear := ""
@@ -470,7 +470,7 @@ type IndexData struct {
 // Builder generates static HTML files
 type Builder struct {
 	cfg             *config.Config
-	journal         *journal.Journal
+	journal         *jnal.Journal
 	baseDir         string
 	css             string
 	linkTargetBlank bool
@@ -479,7 +479,7 @@ type Builder struct {
 }
 
 // NewBuilder creates a new Builder instance
-func NewBuilder(cfg *config.Config, jnl *journal.Journal, baseDir string) (*Builder, error) {
+func NewBuilder(cfg *config.Config, jnl *jnal.Journal, baseDir string) (*Builder, error) {
 	tmpl, err := template.ParseFS(templatesFS, "templates/*.html")
 	if err != nil {
 		return nil, fmt.Errorf("parsing templates: %w", err)
