@@ -3,14 +3,11 @@
 ROOT := $(patsubst %/,%,$(dir $(realpath $(firstword $(MAKEFILE_LIST)))))
 DIST := $(ROOT)/dist
 
-# Build variables
-VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
-COMMIT := $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
-BUILD_TIME := $(shell date -u '+%Y-%m-%d_%H:%M:%S')
+# Build variables (evaluated at build time to avoid conflicts with release VERSION)
 LDFLAGS := -s -w \
-	-X github.com/longkey1/jnal/internal/version.Version=$(VERSION) \
-	-X github.com/longkey1/jnal/internal/version.CommitSHA=$(COMMIT) \
-	-X github.com/longkey1/jnal/internal/version.BuildTime=$(BUILD_TIME)
+	-X github.com/longkey1/jnal/internal/version.Version=$(shell git describe --tags --always --dirty 2>/dev/null || echo "dev") \
+	-X github.com/longkey1/jnal/internal/version.CommitSHA=$(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown") \
+	-X github.com/longkey1/jnal/internal/version.BuildTime=$(shell date -u '+%Y-%m-%d_%H:%M:%S')
 
 .PHONY: build
 build: ## Build binary to dist/
@@ -24,10 +21,18 @@ tools: ## Install tools
 .PHONY: release
 
 # Get current version from git tag
-VERSION := $(shell git tag --sort=-v:refname | head -n1 2>/dev/null || echo "v0.0.0")
+VERSION := $(shell v=$$(git tag --sort=-v:refname | head -n1 2>/dev/null); [ -n "$$v" ] && echo "$$v" || echo "v0.0.0")
 MAJOR := $(shell echo $(VERSION) | cut -d. -f1 | tr -d 'v')
 MINOR := $(shell echo $(VERSION) | cut -d. -f2)
 PATCH := $(shell echo $(VERSION) | cut -d. -f3)
+
+# Calculate next version based on release type
+define next_version
+$(if $(filter patch,$1),v$(MAJOR).$(MINOR).$(shell expr $(PATCH) + 1),\
+$(if $(filter minor,$1),v$(MAJOR).$(shell expr $(MINOR) + 1).0,\
+$(if $(filter major,$1),v$(shell expr $(MAJOR) + 1).0.0,\
+v$(MAJOR).$(MINOR).$(shell expr $(PATCH) + 1))))
+endef
 
 # Variables for release target
 dryrun ?= true
@@ -82,6 +87,7 @@ release: ## Release target with type argument. Usage: make release type=patch|mi
 .PHONY: re-release
 
 # Variables for re-release target
+dryrun ?= true
 tag ?=
 
 re-release: ## Rerelease target with tag argument. Usage: make re-release tag=<tag> dryrun=false
