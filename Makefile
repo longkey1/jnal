@@ -1,18 +1,32 @@
 .DEFAULT_GOAL := help
 
-ROOT := $(patsubst %/,%,$(dir $(realpath $(firstword $(MAKEFILE_LIST)))))
-DIST := $(ROOT)/dist
-
-# Build variables (evaluated at build time to avoid conflicts with release VERSION)
-LDFLAGS := -s -w \
-	-X github.com/longkey1/jnal/internal/version.Version=$(shell git describe --tags --always --dirty 2>/dev/null || echo "dev") \
-	-X github.com/longkey1/jnal/internal/version.CommitSHA=$(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown") \
-	-X github.com/longkey1/jnal/internal/version.BuildTime=$(shell date -u '+%Y-%m-%d_%H:%M:%S')
+export GO_VERSION=$(shell grep "^go " go.mod | sed 's/^go //')
+export PRODUCT_NAME=$(shell cat .product_name 2>/dev/null || echo "unknown")
 
 .PHONY: build
-build: ## Build binary to dist/
-	@mkdir -p $(DIST)
-	go build -ldflags "$(LDFLAGS)" -o $(DIST)/jnal .
+build: ## Build the binary to ./bin/
+	@mkdir -p bin
+	go build -o bin/$(PRODUCT_NAME)
+
+.PHONY: test
+test: ## Run tests
+	go test ./...
+
+.PHONY: fmt
+fmt: ## Format code
+	go fmt ./...
+
+.PHONY: vet
+vet: ## Vet code
+	go vet ./...
+
+.PHONY: tidy
+tidy: ## Tidy dependencies
+	go mod tidy
+
+.PHONY: clean
+clean: ## Clean build artifacts
+	rm -rf bin/
 
 .PHONY: tools
 tools: ## Install tools
