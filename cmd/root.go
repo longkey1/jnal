@@ -40,6 +40,7 @@ func NewRootCommand() *cobra.Command {
 	cmd.AddCommand(newBuildCommand(&app))
 	cmd.AddCommand(newServeCommand(&app))
 	cmd.AddCommand(newPathCommand(&app))
+	cmd.AddCommand(newConfigCommand(&app, &cfgFile))
 	cmd.AddCommand(newInitCommand())
 	cmd.AddCommand(newVersionCommand())
 

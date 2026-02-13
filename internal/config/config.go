@@ -119,7 +119,7 @@ func (c *CommonConfig) SetDefaults() {
 		c.DateFormat = "2006-01-02"
 	}
 	if c.PathFormat == "" {
-		c.PathFormat = "2006-01-02.md"
+		c.PathFormat = "2006/01/2006-01-02.md"
 	}
 }
 
