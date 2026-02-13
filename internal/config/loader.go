@@ -1,50 +1,56 @@
 package config
 
 import (
+	"errors"
 	"fmt"
-	"path/filepath"
+	"os"
 
-	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
 )
 
-// DefaultConfigDir returns the default configuration directory
-func DefaultConfigDir() (string, error) {
-	home, err := homedir.Dir()
-	if err != nil {
-		return "", fmt.Errorf("getting home directory: %w", err)
-	}
-	return filepath.Join(home, ".config", "jnal"), nil
-}
+// DefaultConfigFileName is the default configuration file name
+const DefaultConfigFileName = ".jnal.toml"
 
-// DefaultConfigPath returns the default configuration file path
+// DefaultConfigPath returns the default configuration file path (current directory)
 func DefaultConfigPath() (string, error) {
-	dir, err := DefaultConfigDir()
+	cwd, err := os.Getwd()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("getting current directory: %w", err)
 	}
-	return filepath.Join(dir, "config.toml"), nil
+	return cwd + "/" + DefaultConfigFileName, nil
 }
 
 // Load loads configuration from the specified file or default location
+// If no config file exists, returns default configuration
 func Load(configFile string) (*Config, error) {
 	v := viper.New()
 
 	if configFile != "" {
 		v.SetConfigFile(configFile)
 	} else {
-		configDir, err := DefaultConfigDir()
-		if err != nil {
-			return nil, err
-		}
-		v.AddConfigPath(configDir)
-		v.SetConfigName("config")
+		// Use current directory with .jnal.toml
+		v.AddConfigPath(".")
+		v.SetConfigName(".jnal")
 		v.SetConfigType("toml")
 	}
 
 	v.AutomaticEnv()
 
 	if err := v.ReadInConfig(); err != nil {
+		// If config file not found, use default configuration
+		var configFileNotFoundError viper.ConfigFileNotFoundError
+		if errors.As(err, &configFileNotFoundError) {
+			cfg := &Config{}
+			cfg.SetDefaults()
+			if err := cfg.Validate(); err != nil {
+				return nil, fmt.Errorf("validating config: %w", err)
+			}
+			return cfg, nil
+		}
+		// For explicit config file, return error if not found
+		if configFile != "" && os.IsNotExist(err) {
+			return nil, fmt.Errorf("config file not found: %s", configFile)
+		}
 		return nil, fmt.Errorf("reading config file: %w", err)
 	}
 
@@ -62,7 +68,3 @@ func Load(configFile string) (*Config, error) {
 	return &cfg, nil
 }
 
-// GetConfigPath returns the path of the config file that was loaded
-func GetConfigPath(v *viper.Viper) string {
-	return v.ConfigFileUsed()
-}

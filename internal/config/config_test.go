@@ -11,7 +11,7 @@ func TestConfig_Validate(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "valid config",
+			name: "valid config with base_directory",
 			config: Config{
 				Common: CommonConfig{
 					BaseDirectory: "/home/user/journal",
@@ -20,9 +20,9 @@ func TestConfig_Validate(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:    "missing base_directory",
+			name:    "empty config is valid (base_directory defaults to current directory)",
 			config:  Config{},
-			wantErr: true,
+			wantErr: false,
 		},
 	}
 
@@ -43,14 +43,14 @@ func TestCommonConfig_Validate(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "valid config",
+			name:    "valid config with base_directory",
 			config:  CommonConfig{BaseDirectory: "/home/user/journal"},
 			wantErr: false,
 		},
 		{
-			name:    "missing base_directory",
+			name:    "empty base_directory is valid (defaults to current directory)",
 			config:  CommonConfig{},
-			wantErr: true,
+			wantErr: false,
 		},
 	}
 
@@ -139,6 +139,9 @@ func TestConfig_SetDefaults(t *testing.T) {
 	cfg := &Config{}
 	cfg.SetDefaults()
 
+	if cfg.Common.BaseDirectory != "." {
+		t.Errorf("Common.BaseDirectory = %v, want .", cfg.Common.BaseDirectory)
+	}
 	if cfg.Common.DateFormat != "2006-01-02" {
 		t.Errorf("Common.DateFormat = %v, want 2006-01-02", cfg.Common.DateFormat)
 	}

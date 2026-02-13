@@ -79,10 +79,7 @@ func (c *Config) Validate() error {
 
 // Validate validates the common configuration
 func (c *CommonConfig) Validate() error {
-	if c.BaseDirectory == "" {
-		return fmt.Errorf("base_directory is required")
-	}
-
+	// base_directory defaults to current directory, so it's always valid
 	return nil
 }
 
@@ -115,6 +112,9 @@ func (c *Config) SetDefaults() {
 
 // SetDefaults sets default values for the common configuration
 func (c *CommonConfig) SetDefaults() {
+	if c.BaseDirectory == "" {
+		c.BaseDirectory = "."
+	}
 	if c.DateFormat == "" {
 		c.DateFormat = "2006-01-02"
 	}

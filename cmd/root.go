@@ -33,7 +33,7 @@ func NewRootCommand() *cobra.Command {
 	}
 
 	cmd.PersistentFlags().StringVar(&cfgFile, "config", "",
-		"config file (default is $JNAL_CONFIG or $HOME/.config/jnal/config.toml)")
+		"config file (default is .jnal.toml in current directory)")
 
 	// Add subcommands
 	cmd.AddCommand(newNewCommand(&app))
