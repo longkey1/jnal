@@ -21,7 +21,7 @@ Available Commands:
   version     Show version information
 
 Flags:
-      --config string   config file (default is $JNAL_CONFIG or $HOME/.config/jnal/config.toml)
+      --config string   config file (default is .jnal.toml in current directory)
   -h, --help            help for jnal
 
 Use "jnal [command] --help" for more information about a command.
@@ -34,11 +34,11 @@ You can download binary from [release page](https://github.com/longkey1/jnal/rel
 ## Quick Start
 
 ```bash
-# Initialize configuration
+# Initialize configuration in current directory
 jnal init
 
 # Edit the config file
-vim ~/.config/jnal/config.toml
+vim .jnal.toml
 
 # Create today's journal entry
 jnal new
@@ -52,9 +52,7 @@ jnal serve
 
 ## Configuration
 
-### Environment Variables
-
-- `JNAL_CONFIG` - Path to config file (overrides default `$HOME/.config/jnal/config.toml`)
+The configuration file `.jnal.toml` is loaded from the current directory by default. You can specify a custom path with `--config`.
 
 ### Path Format
 
@@ -108,6 +106,15 @@ By default, `heading_shift = 4`. Set to `0` to disable and output entry content 
 heading_shift = 0  # Disable heading shift
 ```
 
+### Hard Wraps
+
+By default, single newlines in Markdown are converted to `<br>` tags. This is useful for journal entries where line breaks matter.
+
+```toml
+[build]
+hard_wraps = true  # Convert single newlines to <br> (default: true)
+```
+
 ### Auto-linking URLs
 
 URLs in journal entries are automatically converted to clickable links. By default, all links open in a new tab with `target="_blank"` and `rel="noopener noreferrer"` for security.
@@ -121,12 +128,12 @@ link_target_blank = true # Open links in new tab (default: true)
 ### Sample Configuration
 
 ```toml
-# $HOME/.config/jnal/config.toml
+# .jnal.toml
 
 [common]
-base_directory = "/home/user/journal"
+base_directory = "."  # Default: current directory
 date_format = "2006-01-02"
-path_format = "2006/2006-01-02.md"
+path_format = "2006-01-02.md"
 
 [new]
 file_template = "# {{ .Date }}\n"
@@ -134,6 +141,7 @@ file_template = "# {{ .Date }}\n"
 [build]
 title = "My Journal"
 sort = "desc"
+heading_shift = 4  # Shift heading levels in HTML output (0 to disable)
 css = "https://cdn.jsdelivr.net/npm/water.css@2/out/water.css"
 
 [serve]
@@ -184,10 +192,10 @@ jnal build --output dist       # Custom output directory
 
 ### init
 
-Initialize configuration file:
+Initialize configuration file in current directory:
 
 ```bash
-jnal init           # Create default config
+jnal init           # Create .jnal.toml in current directory
 jnal init --force   # Overwrite existing config
 ```
 
@@ -196,9 +204,9 @@ jnal init --force   # Overwrite existing config
 A Docker image is available for running jnal in containers:
 
 ```bash
-docker run -v /path/to/journal:/app -v /path/to/config.toml:/app/config.toml ghcr.io/longkey1/jnal build
+docker run -v /path/to/journal:/app ghcr.io/longkey1/jnal build
 ```
 
 The image uses `/app` as the working directory and expects:
-- Journal files mounted at `/app` (or configured `base_directory`)
-- Config file at `/app/config.toml` (via `JNAL_CONFIG` environment variable)
+- Journal files and `.jnal.toml` mounted at `/app`
+- Or use `--config` flag to specify a custom config path
