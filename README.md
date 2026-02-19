@@ -191,14 +191,3 @@ jnal init           # Create default config
 jnal init --force   # Overwrite existing config
 ```
 
-## Docker
-
-A Docker image is available for running jnal in containers:
-
-```bash
-docker run -v /path/to/journal:/app -v /path/to/config.toml:/app/config.toml ghcr.io/longkey1/jnal build
-```
-
-The image uses `/app` as the working directory and expects:
-- Journal files mounted at `/app` (or configured `base_directory`)
-- Config file at `/app/config.toml` (via `JNAL_CONFIG` environment variable)
