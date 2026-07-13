@@ -135,6 +135,47 @@ func TestServeConfig_Validate(t *testing.T) {
 	}
 }
 
+func TestBuildConfig_Getters(t *testing.T) {
+	t.Run("nil pointers return defaults", func(t *testing.T) {
+		b := BuildConfig{}
+		if got := b.GetHeadingShift(); got != DefaultHeadingShift {
+			t.Errorf("GetHeadingShift() = %v, want %v", got, DefaultHeadingShift)
+		}
+		if !b.GetHardWraps() {
+			t.Error("GetHardWraps() = false, want true")
+		}
+		if !b.GetLinkify() {
+			t.Error("GetLinkify() = false, want true")
+		}
+		if !b.GetLinkTargetBlank() {
+			t.Error("GetLinkTargetBlank() = false, want true")
+		}
+	})
+
+	t.Run("set pointers return their values", func(t *testing.T) {
+		shift := 0
+		disabled := false
+		b := BuildConfig{
+			HeadingShift:    &shift,
+			HardWraps:       &disabled,
+			Linkify:         &disabled,
+			LinkTargetBlank: &disabled,
+		}
+		if got := b.GetHeadingShift(); got != 0 {
+			t.Errorf("GetHeadingShift() = %v, want 0", got)
+		}
+		if b.GetHardWraps() {
+			t.Error("GetHardWraps() = true, want false")
+		}
+		if b.GetLinkify() {
+			t.Error("GetLinkify() = true, want false")
+		}
+		if b.GetLinkTargetBlank() {
+			t.Error("GetLinkTargetBlank() = true, want false")
+		}
+	})
+}
+
 func TestConfig_SetDefaults(t *testing.T) {
 	cfg := &Config{}
 	cfg.SetDefaults()

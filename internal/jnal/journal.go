@@ -77,7 +77,6 @@ func (j *Journal) CreateEntry(date time.Time) (string, error) {
 	return entryPath, nil
 }
 
-
 // ListEntries returns all journal entries in the base directory
 func (j *Journal) ListEntries() (Entries, error) {
 	var entries Entries
@@ -118,19 +117,18 @@ func (j *Journal) ListEntries() (Entries, error) {
 	return entries, nil
 }
 
-
 // buildEntryContent builds the initial content for a new entry
 func (j *Journal) buildEntryContent(date time.Time) (string, error) {
 	dateStr := date.Format(j.cfg.Common.DateFormat)
 
-	return j.executeTemplate(j.cfg.New.FileTemplate, map[string]interface{}{
+	return j.executeTemplate(j.cfg.New.FileTemplate, map[string]any{
 		"Date": dateStr,
 		"Env":  getEnvMap(),
 	})
 }
 
 // executeTemplate executes a template string with the given data
-func (j *Journal) executeTemplate(tpl string, data map[string]interface{}) (string, error) {
+func (j *Journal) executeTemplate(tpl string, data map[string]any) (string, error) {
 	t, err := template.New("").Parse(tpl)
 	if err != nil {
 		return "", fmt.Errorf("parsing template: %w", err)

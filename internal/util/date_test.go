@@ -100,6 +100,21 @@ func TestExtractFromFilename(t *testing.T) {
 	}
 }
 
+func TestToday(t *testing.T) {
+	got := Today()
+	now := time.Now()
+
+	if got.Year() != now.Year() || got.Month() != now.Month() || got.Day() != now.Day() {
+		t.Errorf("Today() = %v, want date components of %v", got, now)
+	}
+	if got.Hour() != 0 || got.Minute() != 0 || got.Second() != 0 || got.Nanosecond() != 0 {
+		t.Errorf("Today() = %v, want time set to midnight", got)
+	}
+	if got.Location() != now.Location() {
+		t.Errorf("Today() location = %v, want %v", got.Location(), now.Location())
+	}
+}
+
 func TestFormat(t *testing.T) {
 	input := time.Date(2024, 1, 15, 10, 30, 0, 0, time.UTC)
 	want := "2024-01-15"
