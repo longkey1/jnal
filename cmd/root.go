@@ -49,10 +49,19 @@ func NewRootCommand() *cobra.Command {
 // shouldSkipConfig returns true if the command doesn't need config loading
 func shouldSkipConfig(cmd *cobra.Command) bool {
 	skipCommands := map[string]bool{
-		"init":       true,
-		"version":    true,
-		"help":       true,
-		"completion": true,
+		"init":                          true,
+		"version":                       true,
+		"help":                          true,
+		"completion":                    true,
+		cobra.ShellCompRequestCmd:       true,
+		cobra.ShellCompNoDescRequestCmd: true,
 	}
-	return skipCommands[cmd.Name()]
+	// Check the command and its ancestors so subcommands like
+	// "completion zsh" are also skipped
+	for c := cmd; c != nil; c = c.Parent() {
+		if skipCommands[c.Name()] {
+			return true
+		}
+	}
+	return false
 }
