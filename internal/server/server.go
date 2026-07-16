@@ -133,7 +133,7 @@ func loadCSS(css string) (string, error) {
 		if err != nil {
 			return "", fmt.Errorf("fetching CSS from %s: %w", css, err)
 		}
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 
 		if resp.StatusCode != http.StatusOK {
 			return "", fmt.Errorf("fetching CSS from %s: status %d", css, resp.StatusCode)
@@ -178,7 +178,7 @@ func (s *Server) Start(ctx context.Context) error {
 		<-ctx.Done()
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		srv.Shutdown(shutdownCtx)
+		_ = srv.Shutdown(shutdownCtx)
 	}()
 
 	fmt.Printf("Starting server at http://localhost:%d\n", s.cfg.Serve.Port)
@@ -279,7 +279,7 @@ func (s *Server) watchFiles(ctx context.Context) {
 		fmt.Printf("Error creating watcher: %v\n", err)
 		return
 	}
-	defer watcher.Close()
+	defer func() { _ = watcher.Close() }()
 
 	// Watch base directory and all subdirectories
 	err = filepath.Walk(s.baseDir, func(path string, info os.FileInfo, err error) error {
@@ -347,7 +347,7 @@ func (s *Server) handleSSE(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	// Send initial connection message
-	fmt.Fprintf(w, "data: connected\n\n")
+	_, _ = fmt.Fprintf(w, "data: connected\n\n")
 	if f, ok := w.(http.Flusher); ok {
 		f.Flush()
 	}
@@ -356,7 +356,7 @@ func (s *Server) handleSSE(w http.ResponseWriter, r *http.Request) {
 	for {
 		select {
 		case <-clientChan:
-			fmt.Fprintf(w, "data: reload\n\n")
+			_, _ = fmt.Fprintf(w, "data: reload\n\n")
 			if f, ok := w.(http.Flusher); ok {
 				f.Flush()
 			}
@@ -561,7 +561,7 @@ func (b *Builder) Build(outputDir string) error {
 	if err != nil {
 		return fmt.Errorf("creating index.html: %w", err)
 	}
-	defer indexFile.Close()
+	defer func() { _ = indexFile.Close() }()
 
 	if err := b.tmpl.ExecuteTemplate(indexFile, "index.html", indexData); err != nil {
 		return fmt.Errorf("executing index template: %w", err)

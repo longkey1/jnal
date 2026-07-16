@@ -15,8 +15,10 @@ func NewRootCommand() *cobra.Command {
 	)
 
 	cmd := &cobra.Command{
-		Use:   "jnal",
-		Short: "A simple CLI tool for daily journaling in Markdown",
+		Use:           "jnal",
+		Short:         "A simple CLI tool for daily journaling in Markdown",
+		SilenceErrors: true,
+		SilenceUsage:  true,
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			// Skip config loading for commands that don't need it
 			if shouldSkipConfig(cmd) {

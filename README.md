@@ -191,3 +191,7 @@ jnal init           # Create default config
 jnal init --force   # Overwrite existing config
 ```
 
+## License
+
+MIT
+
