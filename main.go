@@ -16,6 +16,7 @@ limitations under the License.
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/longkey1/jnal/cmd"
@@ -25,6 +26,7 @@ func main() {
 	rootCmd := cmd.NewRootCommand()
 
 	if err := rootCmd.Execute(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }

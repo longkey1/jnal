@@ -62,7 +62,7 @@ func (j *Journal) CreateEntry(date time.Time) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("creating file %s: %w", entryPath, err)
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	// Write template content
 	content, err := j.buildEntryContent(date)
